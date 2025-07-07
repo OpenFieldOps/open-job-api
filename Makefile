@@ -15,7 +15,6 @@ rm_db:
 start_db:
 	@$(COMPOSE) up -d
 	@sleep 2
-	@make update_db
 
 restart_db:
 	make rm_db
