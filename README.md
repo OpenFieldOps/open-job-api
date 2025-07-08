@@ -1,15 +1,43 @@
-# Elysia with Bun runtime
+# OpenInter Backend
 
 ## Getting Started
-To get started with this template, simply paste this command into your terminal:
+
+To get started with this backend:
+
+### Setup Requirements
+
+- Bun: [bun website](https://bun.sh/)
+- Docker [docker website](https://www.docker.com/)
+- Make: [make website](https://www.gnu.org/software/make/)
+
+### Setup ".env" file
+
+- rename the `.env.example` file to `.env`
+- fill in the required environment variables
+- you can use the `.env.example` file as a reference
+
+### Setup database
+
 ```bash
-bun create elysia ./elysia-example
+make db-start
+make db-migrate
 ```
 
-## Development
-To start the development server run:
+### Run the application
+
 ```bash
-bun run dev
+make api-install
+make api-start
 ```
 
-Open http://localhost:3000/ with your browser to see the result.
+### Run the database studio
+
+```bash
+make db-studio
+```
+
+### Create dummy data
+
+```bash
+make api-dummy-data
+```
