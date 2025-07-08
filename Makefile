@@ -1,24 +1,46 @@
 CLI = bunx drizzle-kit
 COMPOSE = docker compose
 
-.PHONY: update_db rm_db start_db restart_db run_studio
-
-update_db:
+db-migrate:
 	$(CLI) generate
 	$(CLI) migrate
 	$(CLI) push
 
-rm_db:
+db-rm:
 	@$(COMPOSE) down -v --remove-orphans
 	@rm -rf ./drizzle
 
-start_db:
+db-start:
 	@$(COMPOSE) up -d
 	@sleep 2
 
-restart_db:
-	make rm_db
-	make start_db
+db-restart:
+	make db-rm
+	make db-start
 
-run_studio:
+db-studio:
 	$(CLI) studio
+
+api-install:
+	bun install
+
+api-start:
+	bun dev
+
+api-dummy-data:
+	bun run scripts/dummy.ts
+
+build:
+	mkdir -p ./out
+	bun build \
+	--compile \
+	--minify-whitespace \
+	--minify-syntax \
+	--target bun \
+	--outfile ./out/server \
+	./src/index.ts
+
+	chmod +x ./out/server
+
+build-rm:
+	rm -rf ./out

@@ -14,7 +14,7 @@ const dummyUser = {
 async function createDummyData() {
   const existingUser = (
     await db
-      .select()
+      .select({ id: userTable.id })
       .from(userTable)
       .where(eq(userTable.email, dummyUser.email))
       .execute()
@@ -34,8 +34,11 @@ async function createDummyData() {
     })
     .execute();
   await db.insert(userTable).values(dummyUser).execute();
-  delete (dummyUser as any).password;
-  const token = await jwtPlugin.decorator.jwt.sign(dummyUser);
+  const payload: Partial<typeof dummyUser> = {
+    ...dummyUser,
+  };
+  delete payload.password;
+  const token = await jwtPlugin.decorator.jwt.sign(payload);
 
   console.log("dummy user token:\n", token);
 }

@@ -10,7 +10,8 @@ export function validAppEnv() {
   ];
   environment_needed.forEach((key) => {
     if (!Bun.env[key]) {
-      throw new Error(`env: ${key} not set`);
+      console.error(`please set env: ${key} (follow: ".env.example")`);
+      process.exit();
     }
   });
 }
