@@ -36,6 +36,18 @@ make api-start
 make db-studio
 ```
 
+### Run the tests
+
+```bash
+bun test
+```
+
+### Run the lint
+
+```bash
+bun run lint
+```
+
 ### Create dummy data
 
 ```bash
