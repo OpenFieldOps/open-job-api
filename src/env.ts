@@ -7,6 +7,7 @@ export function validAppEnv() {
     "S3_SECRET_ACCESS_KEY",
     "S3_BUCKET",
     "S3_ENDPOINT",
+    "RESEND_KEY",
   ];
   environment_needed.forEach((key) => {
     if (!Bun.env[key]) {

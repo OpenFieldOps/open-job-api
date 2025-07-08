@@ -5,7 +5,7 @@
   "scripts": {
     "dummy": "bun run scripts/dummy.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
+    "lint": "eslint . && tsc -b --noEmit",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
@@ -15,7 +15,8 @@
     "drizzle-orm": "^0.44.2",
     "drizzle-typebox": "^0.3.3",
     "elysia": "latest",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "resend": "^4.6.0"
   },
   "devDependencies": {
     "@elysiajs/eden": "^1.3.2",

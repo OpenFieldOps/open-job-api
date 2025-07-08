@@ -31,7 +31,7 @@ const app = new Elysia({
   .use(userPlugin)
   .use(interventionPlugin);
 
-app.listen(Bun.env.APP_PORT as string, () => {
+app.listen(Bun.env.APP_PORT, () => {
   console.log("App running on port:", Bun.env.APP_PORT);
 });
 

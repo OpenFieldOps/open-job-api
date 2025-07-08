@@ -11,6 +11,10 @@
 # next.js
 /.next/
 /out/
+/out
+
+# drizzle
+/drizzle
 
 # production
 /build

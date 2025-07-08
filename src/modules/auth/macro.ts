@@ -5,7 +5,7 @@ import { UserModel } from "../user/model";
 
 export const jwtPlugin = jwt({
   name: "jwt",
-  secret: Bun.env.JWT_SECRET as string,
+  secret: Bun.env.JWT_SECRET,
 });
 
 async function userFromAuthorizationHeader(
