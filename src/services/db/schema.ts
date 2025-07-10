@@ -32,13 +32,15 @@ export const interventionTable = pgTable("intervention", {
   createdBy: tableIdRef(userTable.id),
   createdAt: defaultDate(),
   updatedAt: defaultDate(),
+  startDate: defaultDate().notNull(),
+  endDate: defaultDate().notNull(),
   status: interventionStatusEnum("status").notNull().default("pending"),
 });
 
 export const userAdminTable = pgTable("users_admin", {
   id: defaultId(),
   userId: tableIdRef(userTable.id).unique(),
-  adminId: tableIdRef(userTable.id).unique(),
+  adminId: tableIdRef(userTable.id),
 });
 
 export const fileTable = pgTable("files", {

@@ -45,7 +45,6 @@ export const userPlugin = new Elysia({
   .get(
     "/avatar",
     ({ user }) => {
-      console.log(user.avatar);
       return user.avatar ? getFileUrl(user.avatar) : "";
     },
     {

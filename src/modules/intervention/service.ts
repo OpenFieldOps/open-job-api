@@ -1,8 +1,10 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lt } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import { interventionTable, userAdminTable } from "../../services/db/schema";
 import { UserModel } from "../user/model";
 import { InterventionModel } from "./model";
+import { AppError } from "../../utils/error";
+import { status } from "elysia";
 
 export abstract class InterventionService {
   static async createIntervention(
@@ -23,25 +25,30 @@ export abstract class InterventionService {
         )
     ).pop();
     if (!isAManagerUser) {
-      throw new Error("You are not allowed to assign this user.");
+      return AppError.Unauthorized;
     }
 
     const intervention = (
       await db
         .insert(interventionTable)
+
         .values({
           title: body.title,
           description: body.description,
           assignedTo: body.assignedTo,
           createdBy: userId,
         })
+
         .returning()
     )[0];
 
-    return intervention;
+    return status(200, intervention);
   }
 
-  static async fetchIntervention({ role, id }: UserModel.UserIdAndRole) {
+  static async fetchIntervention(
+    { role, id }: UserModel.UserIdAndRole,
+    query: InterventionModel.InterventionSelectQuery
+  ): Promise<InterventionModel.InterventionList> {
     const tableUserId =
       role === "admin"
         ? interventionTable.createdBy
@@ -50,8 +57,13 @@ export abstract class InterventionService {
     const interventions = await db
       .select()
       .from(interventionTable)
-      .where(eq(tableUserId, id));
-
+      .where(
+        and(
+          eq(tableUserId, id),
+          gte(interventionTable.startDate, query.start),
+          lt(interventionTable.endDate, query.end)
+        )
+      );
     return interventions;
   }
 

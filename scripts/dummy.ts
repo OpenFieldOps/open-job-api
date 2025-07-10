@@ -1,46 +1,28 @@
-import { eq } from "drizzle-orm";
-import { jwtPlugin } from "../src/modules/auth/macro";
+import { AuthModel } from "../src/modules/auth/model";
+import { AuthService } from "../src/modules/auth/service";
 import { db } from "../src/services/db/db";
-import { fileTable, userTable } from "../src/services/db/schema";
+import { fileTable } from "../src/services/db/schema";
 
 const dummyUser = {
   email: "suleyman@gmail.com",
   username: "suleyman",
-  password: await Bun.password.hash("suleyman123", "argon2d"),
+  password: "suleyman123",
   firstName: "Suleyman",
   lastName: "Laarabi",
 };
 
 async function createDummyData() {
-  const existingUser = (
-    await db
-      .select({ id: userTable.id })
-      .from(userTable)
-      .where(eq(userTable.email, dummyUser.email))
-      .execute()
-  ).pop();
-
-  if (existingUser) {
-    await db
-      .delete(userTable)
-      .where(eq(userTable.id, existingUser.id))
-      .execute();
-  }
-
   await db
     .insert(fileTable)
     .values({
       fileName: "default-avatar.png",
     })
     .execute();
-  await db.insert(userTable).values(dummyUser).execute();
-  const payload: Partial<typeof dummyUser> = {
-    ...dummyUser,
-  };
-  delete payload.password;
-  const token = await jwtPlugin.decorator.jwt.sign(payload);
+  const user = (await AuthService.registerUserAdmin(
+    dummyUser
+  )) as typeof AuthModel.AuthenticatedUserSuccessResponse.static;
 
-  console.log("dummy user token:\n", token);
+  console.log("dummy user token:\n", user.token);
 }
 
 createDummyData()

@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
 import { InterventionModel } from "./model";
 import { InterventionService } from "./service";
@@ -21,6 +21,9 @@ export const interventionPlugin = new Elysia({
     {
       body: InterventionModel.InterventionCreateBody,
       role: "admin",
+      response: {
+        401: t.String(),
+      },
       detail: {
         summary: "Create Intervention",
         description: "Create a new intervention with the provided details.",
@@ -29,15 +32,14 @@ export const interventionPlugin = new Elysia({
   )
   .get(
     "/",
-    async ({ user }) => await InterventionService.fetchIntervention(user),
+    async ({ user, query }) =>
+      await InterventionService.fetchIntervention(user, query),
     {
       user: true,
+      query: InterventionModel.InterventionSelectQuery,
       detail: {
         summary: "Get Interventions",
         description: "Retrieve a list of interventions.",
-      },
-      response: {
-        200: InterventionModel.InterventionList,
       },
     }
   )

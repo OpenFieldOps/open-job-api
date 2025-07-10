@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../services/db/db";
-import { userTable } from "../../services/db/schema";
+import { userAdminTable, userTable } from "../../services/db/schema";
 import { AppError } from "../../utils/error";
 import { UserModel } from "../user/model";
 import { jwtPlugin } from "./macro";
@@ -24,7 +24,7 @@ async function signUserWithoutPassword(user: UserModel.UserWithoutPassword) {
 }
 
 export abstract class AuthService {
-  static async registerUser(registerBody: AuthModel.RegisterUserBody) {
+  static async registerUserAdmin(registerBody: AuthModel.RegisterUserBody) {
     registerBody.password = await Bun.password.hash(
       registerBody.password,
       "argon2d"
@@ -34,9 +34,14 @@ export abstract class AuthService {
       const user = (
         await db
           .insert(userTable)
-          .values(registerBody)
+          .values({ ...registerBody, role: "admin" })
           .returning(UserWithoutPasswordSelect)
       )[0];
+
+      await db
+        .insert(userAdminTable)
+        .values({ adminId: user.id, userId: user.id })
+        .execute();
 
       return await signUserWithoutPassword(user);
     } catch {

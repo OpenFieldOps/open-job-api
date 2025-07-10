@@ -14,9 +14,11 @@ db-start:
 	@$(COMPOSE) up -d
 	@sleep 2
 
-db-restart:
+db-reset:
 	make db-rm
 	make db-start
+	make db-migrate
+	make api-dummy-data
 
 db-studio:
 	$(CLI) studio

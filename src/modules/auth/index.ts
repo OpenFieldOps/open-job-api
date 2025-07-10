@@ -13,17 +13,21 @@ export const authPlugin = new Elysia({
   },
 })
   .use(authMacroPlugin)
-  .post("/register", async ({ body }) => await AuthService.registerUser(body), {
-    body: AuthModel.RegisterUserBody,
-    response: {
-      409: t.String(),
-      200: AuthModel.AuthenticatedUserSuccessResponse,
-    },
-    detail: {
-      summary: "Register User",
-      description: "Register a new user",
-    },
-  })
+  .post(
+    "/register",
+    async ({ body }) => await AuthService.registerUserAdmin(body),
+    {
+      body: AuthModel.RegisterUserBody,
+      response: {
+        409: t.String(),
+        200: AuthModel.AuthenticatedUserSuccessResponse,
+      },
+      detail: {
+        summary: "Register User",
+        description: "Register a new user",
+      },
+    }
+  )
   .post("/login", async ({ body }) => await AuthService.loginUser(body), {
     body: AuthModel.LoginUserBody,
     response: {
