@@ -32,6 +32,11 @@ api-start:
 api-dummy-data:
 	bun run scripts/dummy.ts
 
+tests:
+	./scripts/drop-db.sh
+	make db-migrate
+	bun test
+
 build:
 	mkdir -p ./out
 	bun build \

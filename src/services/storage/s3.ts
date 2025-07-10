@@ -2,7 +2,9 @@ import { S3Client } from "bun";
 import { db } from "../db/db";
 import { fileTable } from "../db/schema";
 
-export const s3Client = new S3Client();
+export const s3Client = (
+  Bun.env.S3_SECRET_ACCESS_KEY ? new S3Client() : null
+) as S3Client;
 
 export type FileId = number;
 

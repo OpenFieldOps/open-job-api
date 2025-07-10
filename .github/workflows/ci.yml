@@ -10,6 +10,25 @@ jobs:
   quality:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: devuser
+          POSTGRES_PASSWORD: devpass
+          POSTGRES_DB: devdb
+        options: >-
+          --health-cmd="pg_isready -U devuser"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
+      JWT_SECRET: MySuperSecret
+
     steps:
       - name: Checkout frontend repo
         uses: actions/checkout@v4

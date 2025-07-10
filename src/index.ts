@@ -11,7 +11,7 @@ import "./services/db/db";
 
 validAppEnv();
 
-const app = new Elysia({
+export const app = new Elysia({
   name: "App",
 })
   .use(
