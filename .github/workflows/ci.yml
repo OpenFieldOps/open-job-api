@@ -48,7 +48,7 @@ jobs:
         run: bun run lint
 
       - name: Run unit tests
-        run: bun test
+        run: make tests
 
       - name: Build for production
         run: make build
