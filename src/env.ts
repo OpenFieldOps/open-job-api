@@ -9,10 +9,20 @@ export function validAppEnv() {
     "S3_ENDPOINT",
     "RESEND_KEY",
   ];
-  environment_needed.forEach((key) => {
-    if (!Bun.env[key]) {
-      console.error(`please set env: ${key} (follow: ".env.example")`);
-      process.exit(1);
-    }
-  });
+  const environment_in_test = ["APP_PORT", "DATABASE_URL", "JWT_SECRET"];
+  if (Bun.env.NODE_ENV === "test") {
+    environment_in_test.forEach((key) => {
+      if (!Bun.env[key]) {
+        console.error(`please set env: ${key} (follow: ".env.example")`);
+        process.exit(1);
+      }
+    });
+  } else {
+    environment_needed.forEach((key) => {
+      if (!Bun.env[key]) {
+        console.error(`please set env: ${key} (follow: ".env.example")`);
+        process.exit(1);
+      }
+    });
+  }
 }
