@@ -1,14 +1,12 @@
 import { describe, expect, it, spyOn } from "bun:test";
 import { validAppEnv } from "../env";
 
-type ReturnCall = () => number;
-
 describe("Tools Tests", () => {
   it("Should exit with error code 1 in test mode", () => {
     const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
       throw new Error(`process.exit called with code: ${code}`);
     });
-    Bun.env.APP_PORT = null as any;
+    Bun.env.APP_PORT = "";
 
     try {
       validAppEnv();
@@ -24,7 +22,7 @@ describe("Tools Tests", () => {
       throw new Error(`process.exit called with code: ${code}`);
     });
     Bun.env.NODE_ENV = "production";
-    Bun.env.APP_PORT = null as any;
+    Bun.env.APP_PORT = "";
 
     try {
       validAppEnv();
