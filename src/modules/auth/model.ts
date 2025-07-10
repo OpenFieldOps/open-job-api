@@ -21,4 +21,6 @@ export namespace AuthModel {
     user: UserModel.UserWithoutPassword,
     token: t.String(),
   });
+  export type AuthenticatedUserSuccessResponse =
+    typeof AuthenticatedUserSuccessResponse.static;
 }

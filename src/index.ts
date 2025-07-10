@@ -26,7 +26,6 @@ export const app = new Elysia({
     })
   )
   .use(cors())
-  .onError(({ error }) => console.error(error))
   .use(authPlugin)
   .use(userPlugin)
   .use(interventionPlugin);

@@ -34,8 +34,16 @@ api-dummy-data:
 
 tests:
 	./scripts/drop-db.sh
-	make db-migrate
-	bun test
+	rm -rf ./drizzle
+	$(CLI) generate
+	$(CLI) migrate
+	bun test $(ARGS)
+
+pre-commit:
+	@echo "Starting pre-commit checks..."
+	@{ bun run lint && make tests; } && \
+		clear && echo "Pre-commit checks passed successfully." || \
+		{ echo "Pre-commit checks failed. See the messages above."; exit 1; }
 
 build:
 	mkdir -p ./out
