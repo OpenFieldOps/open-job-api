@@ -31,7 +31,7 @@ jobs:
       APP_PORT: 4000
 
     steps:
-      - name: Checkout frontend repo
+      - name: Checkout backend repo
         uses: actions/checkout@v4
 
       - name: Set up Bun runtime
@@ -39,7 +39,7 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install frontend dependencies
+      - name: Install backend dependencies
         run: bun install --frozen-lockfile
 
       - name: Generate Drizzle types
