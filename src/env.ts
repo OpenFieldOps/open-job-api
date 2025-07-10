@@ -12,7 +12,7 @@ export function validAppEnv() {
   environment_needed.forEach((key) => {
     if (!Bun.env[key]) {
       console.error(`please set env: ${key} (follow: ".env.example")`);
-      process.exit();
+      process.exit(1);
     }
   });
 }

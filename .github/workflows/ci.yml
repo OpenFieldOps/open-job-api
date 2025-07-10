@@ -28,6 +28,7 @@ jobs:
     env:
       DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
       JWT_SECRET: MySuperSecret
+      APP_PORT: 4000
 
     steps:
       - name: Checkout frontend repo
