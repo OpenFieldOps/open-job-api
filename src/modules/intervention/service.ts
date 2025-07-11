@@ -45,6 +45,20 @@ export abstract class InterventionService {
     return status(200, intervention);
   }
 
+  static async getInterventionById(id: number) {
+    const intervention = await db
+      .select()
+      .from(interventionTable)
+      .where(eq(interventionTable.id, id))
+      .limit(1);
+
+    if (intervention.length === 0) {
+      return AppError.NotFound;
+    }
+
+    return intervention[0];
+  }
+
   static async fetchIntervention(
     { role, id }: UserModel.UserIdAndRole,
     query: InterventionModel.InterventionSelectQuery

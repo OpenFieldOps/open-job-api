@@ -43,6 +43,20 @@ export const interventionPlugin = new Elysia({
       },
     }
   )
+  .get(
+    "/:id",
+    ({ params: { id } }) => InterventionService.getInterventionById(id),
+    {
+      user: true,
+      params: t.Object({
+        id: t.Number({ description: "ID of the intervention to retrieve" }),
+      }),
+      detail: {
+        summary: "Get Intervention by ID",
+        description: "Retrieve a specific intervention by its ID.",
+      },
+    }
+  )
   .patch("/", ({ body }) => InterventionService.updateIntervention(body), {
     role: "admin",
     body: InterventionModel.InterventionUpdateBody,

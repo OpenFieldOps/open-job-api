@@ -30,3 +30,9 @@ export async function createDummyData() {
   console.log("dummy user token:\n", user.token);
   return user;
 }
+
+if (require.main === module) {
+  await createDummyData()
+    .then(() => console.log("Dummy data created successfully"))
+    .catch((error) => console.error("Error creating dummy data:", error));
+}

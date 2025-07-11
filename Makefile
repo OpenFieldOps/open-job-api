@@ -1,22 +1,26 @@
 CLI = bunx drizzle-kit
 COMPOSE = docker compose
 
+compose-up:
+	@$(COMPOSE) up -d
+	@sleep 2
+
+compose-rm:
+	@$(COMPOSE) down -v --remove-orphans
+
+
 db-migrate:
 	$(CLI) generate
 	$(CLI) migrate
 	$(CLI) push
 
 db-rm:
-	@$(COMPOSE) down -v --remove-orphans
+	make compose-up
 	@rm -rf ./drizzle
-
-db-start:
-	@$(COMPOSE) up -d
-	@sleep 2
 
 db-reset:
 	make db-rm
-	make db-start
+	make compose-up
 	make db-migrate
 	make api-dummy-data
 
