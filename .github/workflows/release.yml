@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main, test/github-actions]
-  pull_request:
-    branches: [main, test/github-actions]
+    tags:
+      - "v*"
 
 jobs:
   quality:
@@ -53,3 +52,10 @@ jobs:
 
       - name: Build for production
         run: make build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
