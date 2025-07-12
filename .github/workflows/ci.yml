@@ -54,12 +54,9 @@ jobs:
       - name: Build for production
         run: make build
 
-      - name: Archive dist
-        run: tar -czf backend-dist.tar.gz -C dist
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: backend-dist.tar.gz
+          files: out/server
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
