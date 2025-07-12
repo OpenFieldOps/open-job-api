@@ -1,3 +1,6 @@
 import { drizzle } from "drizzle-orm/bun-sql";
+import { SQL } from "bun";
 
-export const db = drizzle({ connection: { url: process.env.DATABASE_URL! } });
+const client = new SQL(process.env.DATABASE_URL!);
+
+export const db = drizzle({ client });

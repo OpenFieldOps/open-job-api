@@ -18,14 +18,14 @@ export const userTable = pgTable("users", {
   role: roleEnum("role").notNull().default("user"),
 });
 
-export const interventionStatusEnum = pgEnum("intervention_status", [
+export const jobStatusEnum = pgEnum("Job_status", [
   "scheduled",
   "pending",
   "in_progress",
   "completed",
 ]);
 
-export const interventionTable = pgTable("intervention", {
+export const jobTable = pgTable("Job", {
   id: defaultId(),
   title: defaultVarChar(),
   description: text().notNull().default(""),
@@ -35,7 +35,7 @@ export const interventionTable = pgTable("intervention", {
   updatedAt: defaultDate(),
   startDate: defaultDate().notNull(),
   endDate: defaultDate().notNull(),
-  status: interventionStatusEnum("status").notNull().default("pending"),
+  status: jobStatusEnum("status").notNull().default("scheduled"),
 });
 
 export const userAdminTable = pgTable("users_admin", {

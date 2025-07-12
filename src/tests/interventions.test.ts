@@ -7,12 +7,12 @@ import {
   timeoutLightParam,
 } from "./utils";
 
-describe("Interventions Tests", () => {
+describe("Jobs Tests", () => {
   it(
-    "should show no interventions",
+    "should show no Jobs",
     async () => {
       apiTest(
-        api.intervention.get({
+        api.job.get({
           query: {
             start: dayjs().toISOString(),
             end: dayjs().add(1, "day").toISOString(),
@@ -29,14 +29,14 @@ describe("Interventions Tests", () => {
     timeoutLightParam
   );
 
-  const title = "Test Intervention";
-  const description = "This is a test intervention";
+  const title = "Test Job";
+  const description = "This is a test Job";
 
   it(
-    "should create an intervention",
+    "should create an Job",
     async () => {
       await apiTest(
-        api.intervention.post(
+        api.job.post(
           {
             title,
             description,
@@ -57,10 +57,10 @@ describe("Interventions Tests", () => {
   );
 
   it(
-    "should show created intervention",
+    "should show created Job",
     async () => {
       await apiTest(
-        api.intervention.get({
+        api.job.get({
           query: {
             start: dayjs().subtract(1, "day").toISOString(),
             end: dayjs().add(1, "day").toISOString(),
@@ -71,10 +71,10 @@ describe("Interventions Tests", () => {
         (data) => {
           expect(data).toBeArray();
           expect(data).toHaveLength(1);
-          const intervention = data![0];
-          expect(intervention).toHaveProperty("id");
-          expect(intervention.title).toBe(title);
-          expect(intervention.description).toBe(description);
+          const Job = data![0];
+          expect(Job).toHaveProperty("id");
+          expect(Job.title).toBe(title);
+          expect(Job.description).toBe(description);
         }
       );
     },
@@ -82,10 +82,10 @@ describe("Interventions Tests", () => {
   );
 
   it(
-    "shouldn't create an intervention with no authentication",
+    "shouldn't create an Job with no authentication",
     async () => {
       await apiTest(
-        api.intervention.post({
+        api.job.post({
           title,
           description,
           assignedTo: dummyAuthenticatedUser.user.id,
@@ -100,10 +100,10 @@ describe("Interventions Tests", () => {
   );
 
   it(
-    "should update an intervention",
+    "should update an Job",
     async () => {
-      const intervention = (
-        await api.intervention.get({
+      const Job = (
+        await api.job.get({
           query: {
             start: dayjs().subtract(1, "day").toISOString(),
             end: dayjs().add(1, "day").toISOString(),
@@ -112,13 +112,13 @@ describe("Interventions Tests", () => {
         })
       ).data![0];
 
-      const updatedTitle = "Updated Test Intervention";
-      const updatedDescription = "This is an updated test intervention";
+      const updatedTitle = "Updated Test Job";
+      const updatedDescription = "This is an updated test Job";
 
       await apiTest(
-        api.intervention.patch(
+        api.job.patch(
           {
-            id: intervention.id,
+            id: Job.id,
             title: updatedTitle,
             description: updatedDescription,
           },
@@ -134,10 +134,10 @@ describe("Interventions Tests", () => {
   );
 
   it(
-    "should delete an intervention",
+    "should delete an job",
     async () => {
-      const intervention = (
-        await api.intervention.get({
+      const job = (
+        await api.job.get({
           query: {
             start: dayjs().subtract(1, "day").toISOString(),
             end: dayjs().add(1, "day").toISOString(),
@@ -148,7 +148,7 @@ describe("Interventions Tests", () => {
 
       await apiTest(
         api
-          .intervention({ id: intervention.id })
+          .job({ id: job.id })
           .delete(undefined, dummyAuthenticatedUserHeader()),
         200,
         (data) => {
@@ -160,36 +160,40 @@ describe("Interventions Tests", () => {
   );
 
   it(
-    "should show no interventions after deletion",
+    "should show no Jobs after deletion",
     async () => {
-      const res = await api.intervention.get({
-        query: {
-          start: dayjs().subtract(1, "day").toISOString(),
-          end: dayjs().add(1, "day").toISOString(),
-        },
-        ...dummyAuthenticatedUserHeader(),
-      });
-
-      expect(res.status).toBe(200);
-      expect(res.data).toBeArray();
-      expect(res.data).toHaveLength(0);
+      await apiTest(
+        api.job.get({
+          query: {
+            start: dayjs().subtract(1, "day").toISOString(),
+            end: dayjs().add(1, "day").toISOString(),
+          },
+          ...dummyAuthenticatedUserHeader(),
+        }),
+        200,
+        (data) => {
+          expect(data).toBeArray();
+          expect(data).toHaveLength(0);
+        }
+      );
     },
     timeoutLightParam
   );
 
   it(
-    "should not allow creating an intervention with invalid data",
+    "should not allow creating an Job with invalid data",
     async () => {
-      const res = await api.intervention.post(
-        {
-          title: "",
-          description: "This is an invalid test intervention",
-          assignedTo: dummyAuthenticatedUser.user.id,
-        },
-        dummyAuthenticatedUserHeader()
+      await apiTest(
+        api.job.post(
+          {
+            title: "",
+            description: "This is an invalid test Job",
+            assignedTo: dummyAuthenticatedUser.user.id,
+          },
+          dummyAuthenticatedUserHeader()
+        ),
+        422
       );
-
-      expect(res.status).toBe(422);
     },
     timeoutLightParam
   );

@@ -1,6 +1,9 @@
 CLI = bunx drizzle-kit
 COMPOSE = docker compose
 
+all:
+	( make db-studio & pid=$$!; make api-start; kill $$pid )
+
 compose-up:
 	@$(COMPOSE) up -d
 	@sleep 2
@@ -39,8 +42,7 @@ api-dummy-data:
 tests:
 	@./scripts/drop-db.sh > /dev/null
 	@rm -rf ./drizzle > /dev/null
-	@$(CLI) generate > /dev/null
-	@$(CLI) migrate > /dev/null
+	@$(CLI) push > /dev/null
 	@bun test $(ARGS)
 
 pre-commit:

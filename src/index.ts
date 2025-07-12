@@ -4,7 +4,7 @@ import { Elysia } from "elysia";
 import { validAppEnv } from "./env";
 import { authPlugin } from "./modules/auth";
 import { AuthModel } from "./modules/auth/model";
-import { interventionPlugin } from "./modules/intervention/index";
+import { jobPlugin } from "./modules/job/index";
 import { userPlugin } from "./modules/user";
 import { UserModel } from "./modules/user/model";
 import "./services/db/db";
@@ -28,7 +28,7 @@ export const app = new Elysia({
   .use(cors())
   .use(authPlugin)
   .use(userPlugin)
-  .use(interventionPlugin);
+  .use(jobPlugin);
 
 app.listen(Bun.env.APP_PORT, () => {
   if (Bun.env.NODE_ENV !== "test") {
