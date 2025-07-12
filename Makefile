@@ -64,7 +64,7 @@ build:
 	--bytecode \
 	./src/index.ts
 
-	chmod +x ./out/server
+	chmod +x ./out/$(OUT)
 
 build-linux:
 	make build TARGET=bun-linux-x64-modern OUT=server-linux
