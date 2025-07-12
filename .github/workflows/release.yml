@@ -30,8 +30,10 @@ jobs:
       APP_PORT: 4000
 
     steps:
-      - name: Checkout backend repo
+      - name: Checkout backend repo (with tags)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Bun runtime
         uses: oven-sh/setup-bun@v2
