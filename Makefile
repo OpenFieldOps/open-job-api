@@ -1,5 +1,7 @@
 CLI = bunx drizzle-kit
 COMPOSE = docker compose
+TARGET=bun
+OUT=server
 
 all:
 	( make db-studio & pid=$$!; make api-start; kill $$pid )
@@ -57,11 +59,21 @@ build:
 	--compile \
 	--minify-whitespace \
 	--minify-syntax \
-	--target bun \
-	--outfile ./out/server \
+	--target $(TARGET) \
+	--outfile ./out/$(OUT) \
+	--bytecode \
 	./src/index.ts
 
 	chmod +x ./out/server
+
+build-linux:
+	make build TARGET=bun-linux-x64-modern OUT=server-linux
+
+build-darwin-arm64:
+	make build TARGET=bun-darwin-arm64 OUT=server-darwin-arm64
+
+build-darwin-x64:
+	make build TARGET=bun-darwin-x64 OUT=server-darwin-x64
 
 build-rm:
 	rm -rf ./out

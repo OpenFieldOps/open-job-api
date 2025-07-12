@@ -44,3 +44,6 @@ yarn-error.log*
 **/*.log
 package-lock.json
 **/*.bun
+
+scripts/release.sh
+./scripts/release.sh
