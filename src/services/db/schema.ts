@@ -35,6 +35,8 @@ export const jobTable = pgTable("Job", {
   updatedAt: defaultDate(),
   startDate: defaultDate().notNull(),
   endDate: defaultDate().notNull(),
+  location: text().notNull().default(""),
+
   status: jobStatusEnum("status").notNull().default("scheduled"),
 });
 

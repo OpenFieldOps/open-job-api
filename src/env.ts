@@ -7,7 +7,6 @@ export function validAppEnv() {
     "S3_SECRET_ACCESS_KEY",
     "S3_BUCKET",
     "S3_ENDPOINT",
-    "RESEND_KEY",
   ];
   const environment_in_test = ["APP_PORT", "DATABASE_URL", "JWT_SECRET"];
   if (Bun.env.NODE_ENV === "test") {

@@ -47,6 +47,7 @@ export namespace JobModel {
     assignedTo: t.Optional(t.Integer()),
     startDate: t.Optional(t.String()),
     endDate: t.Optional(t.String()),
+    location: t.Optional(t.String()),
     status: t.Optional(t.Enum(JobStatusEnum)),
   });
 

@@ -44,17 +44,17 @@ export abstract class JobService {
   }
 
   static async getJobById(id: number) {
-    const Job = await db
+    const job = await db
       .select()
       .from(jobTable)
       .where(eq(jobTable.id, id))
       .limit(1);
 
-    if (Job.length === 0) {
+    if (job.length === 0) {
       return AppError.NotFound;
     }
 
-    return Job[0];
+    return job[0];
   }
 
   static async fetchJob(
@@ -64,7 +64,7 @@ export abstract class JobService {
     const tableUserId =
       role === "admin" ? jobTable.createdBy : jobTable.assignedTo;
 
-    const Jobs = await db
+    const jobs = await db
       .select()
       .from(jobTable)
       .where(
@@ -74,7 +74,7 @@ export abstract class JobService {
           lt(jobTable.endDate, query.end)
         )
       );
-    return Jobs;
+    return jobs;
   }
 
   static async updateJob(body: JobModel.JobUpdateBody) {
