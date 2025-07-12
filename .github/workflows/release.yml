@@ -56,8 +56,8 @@ jobs:
         run: make build
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: out/server
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
+      with:
+        files: out/server
+        token: ${{ secrets.GH_PAT }}
+
