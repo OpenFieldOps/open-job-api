@@ -1,7 +1,7 @@
 telemetry = false
 
 [test]
-preload = ["./src/tests/setup.test.ts"]
+preload = ["./src/tests/setup.ts"]
 root = "./src/"
 coverageSkipTestFiles = false
 

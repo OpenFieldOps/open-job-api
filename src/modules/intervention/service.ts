@@ -35,6 +35,8 @@ export abstract class InterventionService {
         .values({
           title: body.title,
           description: body.description,
+          startDate: body.startDate,
+          endDate: body.endDate,
           assignedTo: body.assignedTo,
           createdBy: userId,
         })
@@ -89,5 +91,16 @@ export abstract class InterventionService {
       .set(body)
       .where(eq(interventionTable.id, body.id))
       .returning();
+  }
+
+  static async deleteIntervention(interventionId: number, userId: number) {
+    await db
+      .delete(interventionTable)
+      .where(
+        and(
+          eq(interventionTable.id, interventionId),
+          eq(interventionTable.createdBy, userId)
+        )
+      );
   }
 }

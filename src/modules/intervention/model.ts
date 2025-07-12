@@ -9,6 +9,21 @@ export namespace InterventionModel {
   export type InterventionCreateBody = typeof InterventionCreateBody.static;
   export type InterventionUpdateBody = typeof InterventionUpdateBody.static;
 
+  export enum InterventionStatusEnum {
+    Scheduled = "scheduled",
+    Pending = "pending",
+    InProgress = "in_progress",
+    Completed = "completed",
+  }
+
+  export const InterventionStatusString = t.String();
+
+  export type InterventionStatusString =
+    | "scheduled"
+    | "pending"
+    | "in_progress"
+    | "completed";
+
   export const Intervention = createSelectSchema(interventionTable);
 
   export const InterventionSelectQuery = t.Object({
@@ -18,20 +33,26 @@ export namespace InterventionModel {
 
   const _InterventionCreateBody = createInsertSchema(interventionTable);
 
-  export const InterventionCreateBody = t.Omit(_InterventionCreateBody, [
-    "id",
-    "createdBy",
-    "createdAt",
-    "updatedAt",
+  export const InterventionCreateBody = t.Intersect([
+    t.Omit(_InterventionCreateBody, [
+      "id",
+      "createdBy",
+      "createdAt",
+      "updatedAt",
+    ]),
+    t.Object({
+      title: t.String({ minLength: 3 }),
+    }),
   ]);
 
   export const InterventionUpdateBody = t.Object({
     id: t.Integer(),
-    title: t.Optional(t.String()),
+    title: t.Optional(t.String({ minLength: 3 })),
     description: t.Optional(t.String()),
     assignedTo: t.Optional(t.Integer()),
     startDate: t.Optional(t.String()),
     endDate: t.Optional(t.String()),
+    status: t.Optional(t.Enum(InterventionStatusEnum)),
   });
 
   export const InterventionList = t.Array(Intervention);

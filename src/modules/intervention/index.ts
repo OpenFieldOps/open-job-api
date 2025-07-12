@@ -57,6 +57,21 @@ export const interventionPlugin = new Elysia({
       },
     }
   )
+  .delete(
+    "/:id",
+    ({ params: { id }, user }) =>
+      InterventionService.deleteIntervention(id, user.id),
+    {
+      params: t.Object({
+        id: t.Number({ description: "ID of the intervention to delete" }),
+      }),
+      role: "admin",
+      detail: {
+        summary: "Delete Intervention",
+        description: "Delete an intervention by its ID.",
+      },
+    }
+  )
   .patch("/", ({ body }) => InterventionService.updateIntervention(body), {
     role: "admin",
     body: InterventionModel.InterventionUpdateBody,

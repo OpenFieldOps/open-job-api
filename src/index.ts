@@ -31,7 +31,9 @@ export const app = new Elysia({
   .use(interventionPlugin);
 
 app.listen(Bun.env.APP_PORT, () => {
-  console.log("App running on port:", Bun.env.APP_PORT);
+  if (Bun.env.NODE_ENV !== "test") {
+    console.log(`Server is running on http://localhost:${Bun.env.APP_PORT}`);
+  }
 });
 
 export type App = typeof app;

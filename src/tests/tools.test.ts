@@ -1,6 +1,15 @@
 import { describe, expect, it, spyOn } from "bun:test";
 import { validAppEnv } from "../env";
 
+function withoutLog(fn: () => void) {
+  const logSpy = spyOn(console, "error").mockImplementation(() => {});
+  try {
+    fn();
+  } finally {
+    logSpy.mockRestore();
+  }
+}
+
 describe("Tools Tests", () => {
   it("Should exit with error code 1 in test mode", () => {
     const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
@@ -9,7 +18,9 @@ describe("Tools Tests", () => {
     Bun.env.APP_PORT = "";
 
     try {
-      validAppEnv();
+      withoutLog(() => {
+        validAppEnv();
+      });
     } catch (error) {
       expect((error as Error).message).toBe("process.exit called with code: 1");
     } finally {
@@ -17,7 +28,7 @@ describe("Tools Tests", () => {
     }
   });
 
-  it("Should exit with error code 1 in normale mode", () => {
+  it("Should log error and exit with code 1 in normal mode", () => {
     const exitSpy = spyOn(process, "exit").mockImplementation((code) => {
       throw new Error(`process.exit called with code: ${code}`);
     });
@@ -25,7 +36,9 @@ describe("Tools Tests", () => {
     Bun.env.APP_PORT = "";
 
     try {
-      validAppEnv();
+      withoutLog(() => {
+        validAppEnv();
+      });
     } catch (error) {
       expect((error as Error).message).toBe("process.exit called with code: 1");
     } finally {

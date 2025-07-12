@@ -18,7 +18,6 @@ export async function createMinimalData() {
       fileName: "default-avatar.png",
     })
     .execute();
-  console.log("Minimal data created successfully");
 }
 
 export async function createDummyData() {
@@ -27,7 +26,6 @@ export async function createDummyData() {
     dummyUser
   )) as typeof AuthModel.AuthenticatedUserSuccessResponse.static;
 
-  console.log("dummy user token:\n", user.token);
   return user;
 }
 

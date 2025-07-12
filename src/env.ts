@@ -13,6 +13,7 @@ export function validAppEnv() {
   if (Bun.env.NODE_ENV === "test") {
     environment_in_test.forEach((key) => {
       if (!Bun.env[key]) {
+        console.error(`please set env: ${key} (follow: ".env.example")`);
         process.exit(1);
       }
     });

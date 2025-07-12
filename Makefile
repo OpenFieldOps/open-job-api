@@ -37,11 +37,11 @@ api-dummy-data:
 	bun run scripts/dummy.ts
 
 tests:
-	./scripts/drop-db.sh
-	rm -rf ./drizzle
-	$(CLI) generate
-	$(CLI) migrate
-	bun test $(ARGS)
+	@./scripts/drop-db.sh > /dev/null
+	@rm -rf ./drizzle > /dev/null
+	@$(CLI) generate > /dev/null
+	@$(CLI) migrate > /dev/null
+	@bun test $(ARGS)
 
 pre-commit:
 	@echo "Starting pre-commit checks..."

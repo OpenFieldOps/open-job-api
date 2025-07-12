@@ -19,6 +19,7 @@ export const userTable = pgTable("users", {
 });
 
 export const interventionStatusEnum = pgEnum("intervention_status", [
+  "scheduled",
   "pending",
   "in_progress",
   "completed",

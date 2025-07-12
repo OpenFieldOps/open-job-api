@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { api } from "./setup.test";
+import { api } from "./setup";
 
 const testUser = {
   email: "test@gmail.com",
