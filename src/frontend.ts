@@ -12,5 +12,7 @@ export function startFrontendServing() {
         prefix: "/",
       })
     )
-    .listen(8080);
+    .listen(8080, () => {
+      console.log("Frontend is serving on http://localhost:8080");
+    });
 }

@@ -14,7 +14,8 @@ export function validAppEnv() {
   environment_needed.forEach((key) => {
     if (!Bun.env[key.key]) {
       console.error(`please set env: ${key.key} (follow: ".env.example")`);
-      Bun.env[key.key] = key.defaultValue;
+      console.error(`default value: ${key.defaultValue}`);
+      process.exit(1);
     }
   });
 }
