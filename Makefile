@@ -61,7 +61,6 @@ build:
 	--minify-syntax \
 	--target $(TARGET) \
 	--outfile ./out/$(OUT) \
-	--bytecode \
 	./src/index.ts
 
 	chmod +x ./out/$(OUT)
