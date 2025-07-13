@@ -4,6 +4,16 @@
 
 To get started with this backend:
 
+## Installation setup
+
+### Linux / MacOS
+
+```bash
+  curl -H "Cache-Control: no-cache"  -fsSL 'https://raw.githubusercontent.com/OpenFieldOps/open-job-api/refs/heads/main/scripts/install.sh' | bash
+```
+
+## Development Setup
+
 ### Setup Requirements
 
 - Bun: [bun website](https://bun.sh/)
