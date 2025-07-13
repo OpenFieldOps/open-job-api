@@ -8,6 +8,7 @@ import { jobPlugin } from "./modules/job/index";
 import { userPlugin } from "./modules/user";
 import { UserModel } from "./modules/user/model";
 import "./services/db/db";
+import { startFrontendServing } from "./frontend";
 
 validAppEnv();
 
@@ -36,12 +37,13 @@ app.listen(Bun.env.APP_PORT, () => {
   }
 });
 
-// Bun.file("./public")
-//   .then((exists) => {
-//     if (exists) {
-//       startFrontendServing();
-//     }
-//   });
+Bun.file("./public")
+  .stat()
+  .then((info) => {
+    if (info.isDirectory()) {
+      startFrontendServing();
+    }
+  });
 
 export type App = typeof app;
 
