@@ -43,7 +43,8 @@ Bun.file("./public")
     if (info.isDirectory()) {
       startFrontendServing();
     }
-  });
+  })
+  .catch(() => {});
 
 export type App = typeof app;
 
