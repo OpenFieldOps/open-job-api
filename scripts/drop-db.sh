@@ -1,17 +1,14 @@
 #!/bin/bash
 
-# Configuration de la base
 DB_HOST=localhost
 DB_PORT=5433
 DB_NAME=devdb
 DB_USER=devuser
 
-# Demande du mot de passe (ou tu peux aussi l'exporter dans PGPASSWORD pour automatiser)
 export PGPASSWORD="devpass"
 
 echo "🔄 Dropping all objects in database '$DB_NAME'..."
 
-# Génère et exécute les commandes DROP pour toutes les tables, séquences, vues, etc.
 psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -q -Atc "
 DO \$\$
 DECLARE
@@ -40,4 +37,4 @@ END
 \$\$;
 " > /dev/null 2>&1
 
-echo "✅ Base '$DB_NAME' nettoyée."
+echo "✅ '$DB_NAME' clean."
