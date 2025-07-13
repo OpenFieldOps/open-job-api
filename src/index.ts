@@ -37,9 +37,13 @@ app.listen(Bun.env.APP_PORT, () => {
   }
 });
 
-if (await Bun.file("./public").exists()) {
-  startFrontendServing();
-}
+Bun.file("./public")
+  .exists()
+  .then((exists) => {
+    if (exists) {
+      startFrontendServing();
+    }
+  });
 
 export type App = typeof app;
 
