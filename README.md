@@ -8,6 +8,14 @@ To get started with this backend:
 
 ### Linux / MacOS
 
+## Install required components
+
+```bash
+  curl -H "Cache-Control: no-cache"  -fsSL 'https://raw.githubusercontent.com/OpenFieldOps/open-job-api/refs/heads/main/scripts/components.sh' | bash
+```
+
+### Install the backend
+
 ```bash
   curl -H "Cache-Control: no-cache"  -fsSL 'https://raw.githubusercontent.com/OpenFieldOps/open-job-api/refs/heads/main/scripts/install.sh' | bash
 ```
