@@ -1,4 +1,4 @@
-CLI = bunx drizzle-kit
+CLI = bun run scripts/drizzle.ts
 COMPOSE = docker compose
 TARGET=bun
 OUT=server

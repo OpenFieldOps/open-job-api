@@ -18,7 +18,7 @@ export const userTable = pgTable("users", {
   role: roleEnum("role").notNull().default("user"),
 });
 
-export const jobStatusEnum = pgEnum("Job_status", [
+export const jobStatusEnum = pgEnum("job_status", [
   "scheduled",
   "pending",
   "in_progress",

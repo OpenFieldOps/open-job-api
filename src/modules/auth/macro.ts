@@ -2,10 +2,11 @@ import jwt from "@elysiajs/jwt";
 import Elysia from "elysia";
 import { AppError } from "../../utils/error";
 import { UserModel } from "../user/model";
+import { config } from "../../config";
 
 export const jwtPlugin = jwt({
   name: "jwt",
-  secret: Bun.env.JWT_SECRET,
+  secret: config.server.jwt_secret,
 });
 
 async function userFromAuthorizationHeader(

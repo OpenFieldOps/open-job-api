@@ -1,0 +1,17 @@
+[server]
+backend_port = 4000
+frontend_port = 8080
+jwt_secret = "MySuperSecret"
+
+[database]
+url = "postgresql://devuser:devpass@localhost:5433/devdb"
+
+[storage]
+s3_access_key_id = "minioadmin"
+s3_secret_access_key = "minioadminpass"
+s3_bucket_name = "dev-bucket"
+s3_endpoint = "http://localhost:9000"
+
+
+[logging]
+level = "info"
