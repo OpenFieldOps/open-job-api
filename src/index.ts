@@ -8,6 +8,7 @@ import { jobPlugin } from "./modules/job/index";
 import { userPlugin } from "./modules/user";
 import { UserModel } from "./modules/user/model";
 import "./services/db/db";
+import { startFrontendServing } from "./frontend";
 
 validAppEnv();
 
@@ -35,6 +36,10 @@ app.listen(Bun.env.APP_PORT, () => {
     console.log(`Server is running on http://localhost:${Bun.env.APP_PORT}`);
   }
 });
+
+if (await Bun.file("./public").exists()) {
+  startFrontendServing();
+}
 
 export type App = typeof app;
 
