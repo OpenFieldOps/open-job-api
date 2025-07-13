@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:latest
         ports:
-          - 5432:5432
+          - 5433:5432
         env:
           POSTGRES_USER: devuser
           POSTGRES_PASSWORD: devpass
@@ -26,9 +26,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
-      JWT_SECRET: MySuperSecret
-      APP_PORT: 4000
+      DATABASE_URL: postgres://devuser:devpass@localhost:5433/devdb
 
     steps:
       - name: Checkout backend repo
