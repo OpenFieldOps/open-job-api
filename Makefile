@@ -14,9 +14,12 @@ compose-rm:
 	@$(COMPOSE) down -v --remove-orphans
 
 
-db-migrate:
+db-generate:
 	$(CLI) generate
+
+db-migrate:
 	$(CLI) migrate
+	$(CLI) generate
 	$(CLI) push
 
 db-rm:
