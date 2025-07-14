@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import DbUtils from "./utils";
 
 export const roleEnum = pgEnum("user_role", ["user", "admin"]);
@@ -11,10 +11,7 @@ export const userTable = pgTable("users", {
 	username: defaultVarChar().unique(),
 	password: defaultVarChar(),
 	email: defaultVarChar().unique(),
-	avatar: integer()
-		.references(() => fileTable.id)
-		.default(1)
-		.notNull(),
+	avatar: uuid().references(() => fileTable.id),
 	role: roleEnum("role").notNull().default("user"),
 });
 
@@ -48,6 +45,6 @@ export const userAdminTable = pgTable("users_admin", {
 });
 
 export const fileTable = pgTable("files", {
-	id: defaultId(),
+	id: uuid().primaryKey().defaultRandom(),
 	fileName: defaultVarChar(),
 });
