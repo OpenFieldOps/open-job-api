@@ -1,5 +1,13 @@
+version: "3.9"
+
+x-db-credentials: &db-credentials
+  POSTGRES_USER: &db-user listmonk
+  POSTGRES_PASSWORD: &db-password listmonk
+  POSTGRES_DB: &db-name listmonk
+
 services:
-  postgres:
+  # PostgreSQL pour dev
+  dev-postgres:
     image: postgres:latest
     container_name: dev-postgres
     restart: unless-stopped
@@ -19,6 +27,7 @@ services:
     networks:
       - devnet
 
+  # MinIO
   minio:
     image: minio/minio:latest
     container_name: dev-minio
@@ -39,6 +48,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+  # Init MinIO
   minio-init:
     image: minio/mc
     depends_on:
@@ -52,9 +63,65 @@ services:
     networks:
       - devnet
 
+  # PostgreSQL pour Listmonk
+  listmonk-db:
+    image: postgres:17-alpine
+    container_name: listmonk_db
+    restart: unless-stopped
+    ports:
+      - "5434:5432" # Attention : ne pas utiliser 5432 ni 5433
+    networks:
+      - listmonknet
+    environment:
+      <<: *db-credentials
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listmonk"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    volumes:
+      - listmonk-data:/var/lib/postgresql/data
+
+  # Application Listmonk
+  listmonk:
+    image: listmonk/listmonk:latest
+    container_name: listmonk_app
+    restart: unless-stopped
+    ports:
+      - "9002:9000" # Expose sur un autre port que MinIO (9000)
+    networks:
+      - listmonknet
+    hostname: listmonk.example.com
+    depends_on:
+      - listmonk-db
+    command:
+      [
+        sh,
+        -c,
+        "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''",
+      ]
+    environment:
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__user: *db-user
+      LISTMONK_db__password: *db-password
+      LISTMONK_db__database: *db-name
+      LISTMONK_db__host: listmonk-db
+      LISTMONK_db__port: 5432
+      LISTMONK_db__ssl_mode: disable
+      LISTMONK_db__max_open: 25
+      LISTMONK_db__max_idle: 25
+      LISTMONK_db__max_lifetime: 300s
+      TZ: Etc/UTC
+      LISTMONK_ADMIN_USER: ${LISTMONK_ADMIN_USER:-}
+      LISTMONK_ADMIN_PASSWORD: ${LISTMONK_ADMIN_PASSWORD:-}
+    volumes:
+      - ./uploads:/listmonk/uploads:rw
+
 volumes:
   postgres-data:
   minio-data:
+  listmonk-data:
 
 networks:
   devnet:
+  listmonknet:
