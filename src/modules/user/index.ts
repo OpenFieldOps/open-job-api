@@ -1,8 +1,9 @@
 import Elysia, { t } from "elysia";
 import { getFileUrl } from "../../services/storage/s3";
-import { authMacroPlugin } from "../auth/macro";
+import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
 import { UserModel } from "./model";
 import { UserService } from "./service";
+import { AuthModel } from "../auth/model";
 
 export const userPlugin = new Elysia({
   name: "user",
@@ -15,6 +16,7 @@ export const userPlugin = new Elysia({
   },
 })
   .use(authMacroPlugin)
+  .use(roleMacroPlugin)
   .patch("/", ({ body, user }) => UserService.updateUserInfo(body, user.id), {
     body: UserModel.UserUpdateBody,
     user: true,
@@ -39,6 +41,37 @@ export const userPlugin = new Elysia({
       detail: {
         summary: "Update User Avatar",
         description: "Update user avatar",
+      },
+    }
+  )
+  .post(
+    "/create-user",
+    async ({ body, user }) => {
+      return UserService.createAssignedUser(body, user.id);
+    },
+    {
+      body: AuthModel.RegisterUserBody,
+      role: "admin",
+      response: {
+        400: t.String(),
+        409: t.String(),
+      },
+      detail: {
+        summary: "Create Assigned User",
+        description: "Create a new user assigned to the current user",
+      },
+    }
+  )
+  .get(
+    "/assigned-users",
+    async ({ user }) => {
+      return UserService.fetchAssignedUsers(user.id);
+    },
+    {
+      user: true,
+      detail: {
+        summary: "Get Assigned Users",
+        description: "Get users assigned to the current user",
       },
     }
   )

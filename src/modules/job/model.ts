@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
-import { t } from "elysia";
+import { status, t } from "elysia";
 import { jobTable } from "../../services/db/schema";
 
 export namespace JobModel {
@@ -36,7 +36,13 @@ export namespace JobModel {
   export const JobCreateBody = t.Intersect([
     t.Omit(_JobCreateBody, ["id", "createdBy", "createdAt", "updatedAt"]),
     t.Object({
-      title: t.String({ minLength: 3 }),
+      title: t.String({
+        minLength: 3,
+        error: {
+          constructor: () =>
+            status(422, "Title must be at least 3 characters long"),
+        },
+      }),
     }),
   ]);
 

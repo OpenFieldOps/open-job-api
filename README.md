@@ -37,7 +37,7 @@ To get started with this backend:
 ### Setup database
 
 ```bash
-make db-start
+make compose-up
 make db-migrate
 ```
 

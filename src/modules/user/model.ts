@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import { userTable } from "../../services/db/schema";
+import type { userTable } from "../../services/db/schema";
 import { FileMb } from "../../utils/file";
 
 export namespace UserModel {
@@ -9,6 +9,16 @@ export namespace UserModel {
   }
 
   export type UserRole = `${UserRoleEnum}`;
+
+  export const UserInfo = t.Object({
+    id: t.Number(),
+    username: t.String(),
+    email: t.String(),
+    firstName: t.String(),
+    lastName: t.String(),
+  });
+
+  export type UserInfo = typeof UserInfo.static;
 
   export type UserIdAndRole = {
     id: number;

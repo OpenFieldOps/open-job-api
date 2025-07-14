@@ -20,6 +20,7 @@ export const jobPlugin = new Elysia({
     role: "admin",
     response: {
       401: t.String(),
+      422: t.String(),
     },
     detail: {
       summary: "Create Job",

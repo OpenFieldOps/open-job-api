@@ -4,7 +4,7 @@ import { userAdminTable, userTable } from "../../services/db/schema";
 import { AppError } from "../../utils/error";
 import { UserModel } from "../user/model";
 import { jwtPlugin } from "./macro";
-import { AuthModel } from "./model";
+import type { AuthModel } from "./model";
 
 const UserWithoutPasswordSelect = {
   id: userTable.id,
@@ -24,7 +24,13 @@ async function signUserWithoutPassword(user: UserModel.UserWithoutPassword) {
 }
 
 export abstract class AuthService {
-  static async registerUserAdmin(registerBody: AuthModel.RegisterUserBody) {
+  // default user is register as admin
+  // If assignedTo is provided, the user is registered as a user under the admin with the given assignedTo ID.
+  static async registerUser(
+    registerBody: AuthModel.RegisterUserBody,
+    role: UserModel.UserRole,
+    assignedTo?: number
+  ) {
     registerBody.password = await Bun.password.hash(
       registerBody.password,
       "argon2d"
@@ -34,19 +40,30 @@ export abstract class AuthService {
       const user = (
         await db
           .insert(userTable)
-          .values({ ...registerBody, role: "admin" })
+          .values({ ...registerBody, role })
           .returning(UserWithoutPasswordSelect)
       )[0];
 
       await db
         .insert(userAdminTable)
-        .values({ adminId: user.id, userId: user.id })
+        .values({ adminId: assignedTo ?? user.id, userId: user.id })
         .execute();
 
-      return await signUserWithoutPassword(user);
+      return user;
     } catch {
+      return AppError.ResultEnum.Conflict;
+    }
+  }
+
+  static async registerUserAdmin(registerBody: AuthModel.RegisterUserBody) {
+    const res = await AuthService.registerUser(
+      registerBody,
+      UserModel.UserRoleEnum.admin
+    );
+    if (res === AppError.ResultEnum.Conflict) {
       return AppError.Conflict;
     }
+    return await signUserWithoutPassword(res);
   }
 
   static async loginUser(loginBody: AuthModel.LoginUserBody) {

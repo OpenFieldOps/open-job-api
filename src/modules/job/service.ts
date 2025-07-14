@@ -1,8 +1,8 @@
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, eq, gte, lt, or } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import { jobTable, userAdminTable } from "../../services/db/schema";
-import { UserModel } from "../user/model";
-import { JobModel } from "./model";
+import type { UserModel } from "../user/model";
+import type { JobModel } from "./model";
 import { AppError } from "../../utils/error";
 import { status } from "elysia";
 
@@ -58,18 +58,15 @@ export abstract class JobService {
   }
 
   static async fetchJob(
-    { role, id }: UserModel.UserIdAndRole,
+    { id }: UserModel.UserIdAndRole,
     query: JobModel.JobSelectQuery
   ): Promise<JobModel.JobList> {
-    const tableUserId =
-      role === "admin" ? jobTable.createdBy : jobTable.assignedTo;
-
     const jobs = await db
       .select()
       .from(jobTable)
       .where(
         and(
-          eq(tableUserId, id),
+          or(eq(jobTable.assignedTo, id), eq(jobTable.createdBy, id)),
           gte(jobTable.startDate, query.start),
           lt(jobTable.endDate, query.end)
         )
@@ -86,8 +83,19 @@ export abstract class JobService {
   }
 
   static async deleteJob(JobId: number, userId: number) {
-    await db
-      .delete(jobTable)
-      .where(and(eq(jobTable.id, JobId), eq(jobTable.createdBy, userId)));
+    try {
+      const deleted = await db
+        .delete(jobTable)
+        .where(and(eq(jobTable.id, JobId), eq(jobTable.createdBy, userId)))
+        .returning();
+
+      if (deleted.length === 0) {
+        return AppError.NotFound;
+      }
+
+      return status(200, null);
+    } catch {
+      return AppError.Unauthorized;
+    }
   }
 }
