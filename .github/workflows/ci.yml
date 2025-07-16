@@ -29,7 +29,6 @@ jobs:
         image: minio/minio:latest
         ports:
           - 9000:9000
-          - 9001:9001
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadminpass
