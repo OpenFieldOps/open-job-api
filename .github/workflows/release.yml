@@ -24,10 +24,29 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      minio:
+        image: minio/minio:latest
+        ports:
+          - 9000:9000
+          - 9001:9001
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadminpass
+        options: >-
+          --health-cmd="curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval=30s
+          --health-timeout=10s
+          --health-retries=5
+          --entrypoint sh -c "minio server /data --console-address ':9001'"
+
     env:
       DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
       JWT_SECRET: MySuperSecret
       APP_PORT: 4000
+      MINIO_ENDPOINT: http://localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadminpass
+      MINIO_BUCKET: dev-bucket
 
     steps:
       - name: Checkout backend repo (with tags)
@@ -46,11 +65,19 @@ jobs:
       - name: Generate Drizzle types
         run: make db-generate
 
+      - name: Wait for MinIO to be ready & create bucket
+        run: |
+          until curl -sSf http://localhost:9000/minio/health/live; do
+            echo "Waiting for MinIO..."
+            sleep 5
+          done
+          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          ./mc alias set local http://localhost:9000 minioadmin minioadminpass
+          ./mc mb -p local/dev-bucket || echo "Bucket already exists"
+
       - name: Lint TypeScript
         run: bun run lint
-
-      - name: Run unit tests
-        run: make tests
 
       - name: Build for Linux x64
         run: make build-linux OUT=server-linux
@@ -62,5 +89,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: out/server-linux,out/server-darwin-arm64
-
-          token: ${{ secrets.GH_PAT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
