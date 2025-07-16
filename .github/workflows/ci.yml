@@ -34,12 +34,10 @@ jobs:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadminpass
         options: >-
-          --entrypoint /bin/sh
           --health-cmd="curl -f http://localhost:9000/minio/health/live || exit 1"
           --health-interval=30s
           --health-timeout=10s
           --health-retries=5
-          -c "minio server /data --console-address ':9001'"
 
     env:
       DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
