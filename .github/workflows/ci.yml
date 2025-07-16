@@ -19,12 +19,11 @@ jobs:
           POSTGRES_USER: devuser
           POSTGRES_PASSWORD: devpass
           POSTGRES_DB: devdb
-      options: >-
-        --health-cmd="curl -f http://localhost:9000/minio/health/live || exit 1"
-        --health-interval=30s
-        --health-timeout=10s
-        --health-retries=5
-        --entrypoint "/bin/sh"
+        options: >-
+          --health-cmd="pg_isready -U devuser"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
       minio:
         image: minio/minio:latest
@@ -35,11 +34,12 @@ jobs:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadminpass
         options: >-
+          --entrypoint /bin/sh
           --health-cmd="curl -f http://localhost:9000/minio/health/live || exit 1"
           --health-interval=30s
           --health-timeout=10s
           --health-retries=5
-          --entrypoint sh -c "minio server /data --console-address ':9001'"
+          -c "minio server /data --console-address ':9001'"
 
     env:
       DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
