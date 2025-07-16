@@ -1,9 +1,10 @@
-name: Release Workflow
+name: Ci Workflow
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main, test/github-actions]
+  pull_request:
+    branches: [main, test/github-actions]
 
 jobs:
   quality:
