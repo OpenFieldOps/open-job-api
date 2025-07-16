@@ -6,4 +6,14 @@ import * as schema from "./schema";
 
 const client = new SQL(config.database.url);
 
-export const db = drizzle({ client, schema: schema });
+export const sqlLogs: string[] = [];
+
+export const db = drizzle({
+	client,
+	schema: schema,
+	logger: {
+		logQuery(query) {
+			sqlLogs.push(query);
+		},
+	},
+});

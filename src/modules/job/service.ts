@@ -38,6 +38,7 @@ export abstract class JobService {
 		if (!isAManagerUser) {
 			return AppError.Unauthorized;
 		}
+
 		const job = (
 			await db
 				.insert(jobTable)
@@ -90,7 +91,7 @@ export abstract class JobService {
 	static async fetchJobDocuments(jobId: number, userId: number) {
 		const documents = await db
 			.select({
-				fileId: fileTable.id,
+				id: fileTable.id,
 				fileName: fileTable.fileName,
 			})
 			.from(jobFiles)
@@ -102,22 +103,43 @@ export abstract class JobService {
 	}
 
 	static async createJobDocument(jobId: number, file: File, userId: number) {
-		const fileId = await FileStorageService.uploadFile(file);
 		const job = await db
-			.select()
+			.select({})
 			.from(jobTable)
-			.where(
-				and(
-					eq(jobTable.id, jobId),
-					or(eq(jobTable.assignedTo, userId), eq(jobTable.createdBy, userId)),
-				),
-			)
+			.where(userJobAccessCondition(userId, jobId))
 			.limit(1);
+		if (job.length <= 0) {
+			return AppError.Unauthorized;
+		}
+		const fileId = await FileStorageService.uploadFile(file);
+
+		await db.insert(jobFiles).values({
+			fileId,
+			jobId,
+		});
 
 		return {
-			job,
-			fileId,
+			id: fileId,
+			fileName: file.name,
 		};
+	}
+
+	static async deleteJobDocument(
+		jobId: number,
+		userId: number,
+		fileId: string,
+	) {
+		const userJob = db
+			.$with("user_job")
+			.as(
+				db
+					.select()
+					.from(jobFiles)
+					.innerJoin(jobTable, eq(jobTable.id, jobFiles.jobId))
+					.where(userJobAccessCondition(userId, jobId)),
+			);
+
+		await db.with(userJob).delete(jobFiles).where(eq(jobFiles.fileId, fileId));
 	}
 
 	static async updateJob(body: JobModel.JobUpdateBody) {

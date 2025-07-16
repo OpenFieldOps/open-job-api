@@ -1,4 +1,5 @@
 import { expect } from "bun:test";
+import { sqlLogs } from "../services/db/db";
 import { dummyAuthenticatedUser } from "./setup";
 
 export function dummyAuthenticatedUserHeader() {
@@ -27,7 +28,7 @@ export async function apiTest<T extends { status: number; data?: unknown }>(
 	res: T | Promise<T>,
 	expectedStatus: number,
 	otherAssertions?: (data: T["data"]) => void,
-) {
+): Promise<void> {
 	if (res instanceof Promise) {
 		res = await res;
 	}
@@ -35,4 +36,10 @@ export async function apiTest<T extends { status: number; data?: unknown }>(
 	if (otherAssertions) {
 		otherAssertions(res.data);
 	}
+}
+
+export async function sqlCount(func: () => Promise<void>, maxSql: number = 1) {
+	sqlLogs.length = 0;
+	await func();
+	expect(sqlLogs.length).toBeLessThanOrEqual(maxSql);
 }

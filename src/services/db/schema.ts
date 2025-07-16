@@ -38,8 +38,8 @@ export const jobTable = pgTable("job", {
 });
 
 export const jobFiles = pgTable("job_file", {
-	fileId: uuid().references(() => fileTable.id),
-	jobId: serial().references(() => jobTable.id),
+	fileId: uuid().references(() => fileTable.id, { onDelete: "cascade" }),
+	jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
 });
 
 export const userAdminTable = pgTable("users_admin", {

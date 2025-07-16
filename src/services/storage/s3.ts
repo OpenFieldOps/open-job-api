@@ -1,8 +1,14 @@
 import { S3Client } from "bun";
+import { config } from "../../config";
 import { db } from "../db/db";
 import { fileTable } from "../db/schema";
 
-export const s3Client = new S3Client();
+export const s3Client = new S3Client({
+	accessKeyId: config.storage.s3_access_key_id,
+	secretAccessKey: config.storage.s3_secret_access_key,
+	bucket: config.storage.s3_bucket_name,
+	endpoint: config.storage.s3_endpoint,
+});
 
 export type FileId = string;
 

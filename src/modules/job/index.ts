@@ -63,13 +63,31 @@ export const jobPlugin = new Elysia({
 	.post(
 		"/documents/:jobId",
 		async ({ user, body, params: { jobId } }) =>
-			JobService.createJobDocument(jobId, body, user.id),
+			JobService.createJobDocument(jobId, body.file, user.id),
 		{
 			user: true,
 			params: t.Object({
 				jobId: t.Number(),
 			}),
-			body: t.File(),
+			body: t.Object({
+				file: t.File(),
+			}),
+			detail: {
+				summary: "Create Job Document",
+				description: "Create a new document for a specific Job.",
+			},
+		},
+	)
+	.delete(
+		"/delete-document",
+		async ({ user, body: { jobId, fileId } }) =>
+			JobService.deleteJobDocument(jobId, user.id, fileId),
+		{
+			user: true,
+			body: t.Object({
+				jobId: t.Number(),
+				fileId: t.String(),
+			}),
 			detail: {
 				summary: "Create Job Document",
 				description: "Create a new document for a specific Job.",
