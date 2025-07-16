@@ -1,4 +1,4 @@
-name: Ci Workflow
+name: CI Workflow
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:latest
         ports:
-          - 5432:5432
+          - 5433:5432
         env:
           POSTGRES_USER: devuser
           POSTGRES_PASSWORD: devpass
@@ -25,39 +25,12 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-      minio:
-        image: minio/minio:latest
-        ports:
-          - 9000:9000
-          - 9001:9001
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadminpass
-        options: >-
-          --entrypoint minio
-          --health-cmd="curl -f http://localhost:9000/minio/health/live || exit 1"
-          --health-interval=10s
-          --health-timeout=10s
-          --health-retries=5
-          server /data --console-address ":9001"
-
     env:
-      DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
-      JWT_SECRET: MySuperSecret
-      APP_PORT: 4000
-      MINIO_ENDPOINT: http://localhost:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadminpass
-      MINIO_BUCKET: dev-bucket
+      DATABASE_URL: postgres://devuser:devpass@localhost:5433/devdb
 
     steps:
-      - name: Wait for MinIO
-        run: curl -sf http://localhost:9000/minio/health/live
-
-      - name: Checkout backend repo (with tags)
+      - name: Checkout backend repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Bun runtime
         uses: oven-sh/setup-bun@v2
@@ -69,17 +42,6 @@ jobs:
 
       - name: Generate Drizzle types
         run: make db-generate
-
-      - name: Wait for MinIO to be ready & create bucket
-        run: |
-          until curl -sSf http://localhost:9000/minio/health/live; do
-            echo "Waiting for MinIO..."
-            sleep 5
-          done
-          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
-          chmod +x mc
-          ./mc alias set local http://localhost:9000 minioadmin minioadminpass
-          ./mc mb -p local/dev-bucket || echo "Bucket already exists"
 
       - name: Lint TypeScript
         run: bun run lint
