@@ -1,4 +1,5 @@
-import { pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { pgEnum, pgTable, serial, text, uuid } from "drizzle-orm/pg-core";
 import DbUtils from "./utils";
 
 export const roleEnum = pgEnum("user_role", ["user", "admin"]);
@@ -22,7 +23,7 @@ export const jobStatusEnum = pgEnum("job_status", [
 	"completed",
 ]);
 
-export const jobTable = pgTable("Job", {
+export const jobTable = pgTable("job", {
 	id: defaultId(),
 	title: defaultVarChar(),
 	description: text().notNull().default(""),
@@ -34,6 +35,11 @@ export const jobTable = pgTable("Job", {
 	endDate: defaultDate().notNull(),
 	location: text().notNull().default(""),
 	status: jobStatusEnum("status").notNull().default("scheduled"),
+});
+
+export const jobFiles = pgTable("job_file", {
+	fileId: uuid().references(() => fileTable.id),
+	jobId: serial().references(() => jobTable.id),
 });
 
 export const userAdminTable = pgTable("users_admin", {
@@ -48,3 +54,14 @@ export const fileTable = pgTable("files", {
 	id: uuid().primaryKey().defaultRandom(),
 	fileName: defaultVarChar(),
 });
+
+export const jobFilesRelation = relations(jobFiles, ({ one }) => ({
+	file: one(fileTable, {
+		fields: [jobFiles.fileId],
+		references: [fileTable.id],
+	}),
+	job: one(jobTable, {
+		fields: [jobFiles.jobId],
+		references: [jobTable.id],
+	}),
+}));

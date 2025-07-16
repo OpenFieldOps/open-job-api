@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { getFileUrl } from "../../services/storage/s3";
+import { FileStorageService } from "../../services/storage/s3";
 import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
 import { AuthModel } from "../auth/model";
 import { UserModel } from "./model";
@@ -78,7 +78,7 @@ export const userPlugin = new Elysia({
 	.get(
 		"/avatar",
 		({ user }) => {
-			return user.avatar ? getFileUrl(user.avatar) : "";
+			return user.avatar ? FileStorageService.getFileUrl(user.avatar) : "";
 		},
 		{
 			user: true,

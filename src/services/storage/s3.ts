@@ -6,27 +6,29 @@ export const s3Client = new S3Client();
 
 export type FileId = string;
 
-export async function uploadFile(file: File): Promise<FileId> {
-	const fileId: FileId = (
-		await db
-			.insert(fileTable)
-			.values({
-				fileName: file.name,
-			})
-			.returning({ id: fileTable.id })
-	)[0].id;
+export abstract class FileStorageService {
+	static async uploadFile(file: File): Promise<FileId> {
+		const fileId: FileId = (
+			await db
+				.insert(fileTable)
+				.values({
+					fileName: file.name,
+				})
+				.returning({ id: fileTable.id })
+		)[0].id;
 
-	const s3File = s3Client.file(fileId);
+		const s3File = s3Client.file(fileId);
 
-	await s3File.write(file);
+		await s3File.write(file);
 
-	return fileId;
-}
+		return fileId;
+	}
 
-export function getFileUrl(fileId: FileId): string {
-	return Bun.s3.presign(fileId.toString(), {
-		expiresIn: 3600,
-		method: "GET",
-		type: "application/octet-stream",
-	});
+	static getFileUrl(fileId: FileId): string {
+		return Bun.s3.presign(fileId.toString(), {
+			expiresIn: 3600,
+			method: "GET",
+			type: "application/octet-stream",
+		});
+	}
 }

@@ -1,7 +1,7 @@
 import { and, eq, not } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import { userAdminTable, userTable } from "../../services/db/schema";
-import { uploadFile } from "../../services/storage/s3";
+import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
 import type { AuthModel } from "../auth/model";
 import { AuthService } from "../auth/service";
@@ -19,7 +19,7 @@ export abstract class UserService {
 	}
 
 	static async updateUserAvatar(file: File, userId: number) {
-		const fileId = await uploadFile(file);
+		const fileId = await FileStorageService.uploadFile(file);
 		await db
 			.update(userTable)
 			.set({
