@@ -1,4 +1,5 @@
 import { S3Client } from "bun";
+import { eq } from "drizzle-orm";
 import { config } from "../../config";
 import { db } from "../db/db";
 import { fileTable } from "../db/schema";
@@ -30,8 +31,14 @@ export abstract class FileStorageService {
 		return fileId;
 	}
 
+	static async deleteFile(fileId: FileId): Promise<void> {
+		const s3File = s3Client.file(fileId);
+		await s3File.delete();
+		await db.delete(fileTable).where(eq(fileTable.id, fileId));
+	}
+
 	static getFileUrl(fileId: FileId): string {
-		return Bun.s3.presign(fileId.toString(), {
+		return s3Client.presign(fileId.toString(), {
 			expiresIn: 3600,
 			method: "GET",
 			type: "application/octet-stream",
@@ -40,8 +47,7 @@ export abstract class FileStorageService {
 }
 
 if (Bun.env.NODE_ENV === "test" || Bun.env.NODE_ENV === "development") {
-	// In development, we can use a local file system for testing purposes.
-	// This is not recommended for production use.
+	// we cannot use minio in github actions
 	FileStorageService.uploadFile = async (file: File): Promise<FileId> => {
 		const fileId = await db
 			.insert(fileTable)

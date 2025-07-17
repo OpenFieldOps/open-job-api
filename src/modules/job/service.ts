@@ -108,6 +108,7 @@ export abstract class JobService {
 			.from(jobTable)
 			.where(userJobAccessCondition(userId, jobId))
 			.limit(1);
+
 		if (job.length <= 0) {
 			return AppError.Unauthorized;
 		}
@@ -140,6 +141,7 @@ export abstract class JobService {
 			);
 
 		await db.with(userJob).delete(jobFiles).where(eq(jobFiles.fileId, fileId));
+		await FileStorageService.deleteFile(fileId);
 	}
 
 	static async updateJob(body: JobModel.JobUpdateBody) {

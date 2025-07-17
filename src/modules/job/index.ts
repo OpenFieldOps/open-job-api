@@ -83,7 +83,7 @@ export const jobPlugin = new Elysia({
 		async ({ user, body: { jobId, fileId } }) =>
 			JobService.deleteJobDocument(jobId, user.id, fileId),
 		{
-			user: true,
+			role: "admin",
 			body: t.Object({
 				jobId: t.Number(),
 				fileId: t.String(),

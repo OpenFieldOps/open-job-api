@@ -9,6 +9,7 @@ import { jobPlugin } from "./modules/job/index";
 import { userPlugin } from "./modules/user";
 import { UserModel } from "./modules/user/model";
 import "./services/db/db";
+import { filePlugin } from "./modules/files";
 
 export const app = new Elysia({
 	name: "App",
@@ -32,7 +33,8 @@ export const app = new Elysia({
 	})
 	.use(authPlugin)
 	.use(userPlugin)
-	.use(jobPlugin);
+	.use(jobPlugin)
+	.use(filePlugin);
 
 app.listen(config.server.backend_port, () => {
 	if (Bun.env.NODE_ENV !== "test") {
