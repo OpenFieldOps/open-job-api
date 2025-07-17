@@ -65,6 +65,10 @@ if (Bun.env.NODE_ENV === "test" || Bun.env.NODE_ENV === "development") {
 		return fileId;
 	};
 
+	FileStorageService.deleteFile = async (fileId: FileId): Promise<void> => {
+		await db.delete(fileTable).where(eq(fileTable.id, fileId));
+	};
+
 	FileStorageService.getFileUrl = (fileId: FileId): string => {
 		return `/files/${fileId}`;
 	};
