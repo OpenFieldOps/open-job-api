@@ -26,11 +26,6 @@ export const app = new Elysia({
 		}),
 	)
 	.use(cors())
-	.onError((error) => {
-		if (Bun.env.NODE_ENV !== "test") {
-			console.error("An error occurred:", error);
-		}
-	})
 	.use(authPlugin)
 	.use(userPlugin)
 	.use(jobPlugin)

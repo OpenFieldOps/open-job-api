@@ -18,7 +18,7 @@ export function dummyOperatorUserHeader() {
 	};
 }
 
-const maxLightRequestTimeout = 20;
+const maxLightRequestTimeout = 30;
 
 export const timeoutLightParam = {
 	timeout: maxLightRequestTimeout,
