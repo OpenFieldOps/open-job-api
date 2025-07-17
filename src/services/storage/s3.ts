@@ -49,14 +49,20 @@ export abstract class FileStorageService {
 if (Bun.env.NODE_ENV === "test" || Bun.env.NODE_ENV === "development") {
 	// we cannot use minio in github actions
 	FileStorageService.uploadFile = async (file: File): Promise<FileId> => {
-		const fileId = await db
-			.insert(fileTable)
-			.values({
-				fileName: file.name,
-			})
-			.returning({ id: fileTable.id });
+		const fileId: FileId | undefined = (
+			await db
+				.insert(fileTable)
+				.values({
+					fileName: file.name,
+				})
+				.returning({ id: fileTable.id })
+		).pop()?.id;
 
-		return fileId[0].id;
+		if (!fileId) {
+			throw new Error("Failed to create file record in database");
+		}
+
+		return fileId;
 	};
 
 	FileStorageService.getFileUrl = (fileId: FileId): string => {
