@@ -47,3 +47,5 @@ package-lock.json
 
 scripts/release.sh
 ./scripts/release.sh
+
+/prod

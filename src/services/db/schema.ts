@@ -1,5 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgEnum, pgTable, serial, text, uuid } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	jsonb,
+	pgEnum,
+	pgTable,
+	serial,
+	text,
+	uuid,
+} from "drizzle-orm/pg-core";
 import DbUtils from "./utils";
 
 export const roleEnum = pgEnum("user_role", ["user", "admin"]);
@@ -37,6 +45,24 @@ export const jobTable = pgTable("job", {
 	status: jobStatusEnum("status").notNull().default("scheduled"),
 });
 
+export const notificationTypeEnum = pgEnum("notification_type", [
+	"job_assigned",
+	"job_updated",
+	"job_completed",
+	"system_message",
+]);
+
+export const notificationTable = pgTable("notification", {
+	id: defaultId(),
+	userId: tableIdRef(userTable.id).notNull(),
+	title: defaultVarChar().notNull(),
+	message: text().notNull(),
+	createdAt: defaultDate().notNull(),
+	payload: jsonb("payload").notNull().default("{}"),
+	type: notificationTypeEnum("type").notNull().default("system_message"),
+	isRead: boolean("is_read").notNull().default(false),
+});
+
 export const jobFiles = pgTable("job_file", {
 	fileId: uuid().references(() => fileTable.id, { onDelete: "cascade" }),
 	jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
@@ -65,3 +91,13 @@ export const jobFilesRelation = relations(jobFiles, ({ one }) => ({
 		references: [jobTable.id],
 	}),
 }));
+
+export const userNotificationRelation = relations(
+	notificationTable,
+	({ one }) => ({
+		user: one(userTable, {
+			fields: [notificationTable.userId],
+			references: [userTable.id],
+		}),
+	}),
+);
