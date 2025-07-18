@@ -75,14 +75,18 @@ export abstract class JobService {
 		{ id }: UserModel.UserIdAndRole,
 		query: JobModel.JobSelectQuery,
 	): Promise<JobModel.JobList> {
+		if (query.status === "none") {
+			query.status = undefined;
+		}
 		const jobs = await db
 			.select()
 			.from(jobTable)
 			.where(
 				and(
 					or(eq(jobTable.assignedTo, id), eq(jobTable.createdBy, id)),
-					gte(jobTable.startDate, query.start),
-					lt(jobTable.endDate, query.end),
+					query.start ? gte(jobTable.startDate, query.start) : undefined,
+					query.end ? lt(jobTable.endDate, query.end) : undefined,
+					query.status ? eq(jobTable.status, query.status) : undefined,
 				),
 			);
 		return jobs;

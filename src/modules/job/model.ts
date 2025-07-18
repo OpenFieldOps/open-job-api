@@ -19,10 +19,18 @@ export namespace JobModel {
 
 	export const Job = createSelectSchema(jobTable);
 
-	export const JobSelectQuery = t.Object({
-		start: t.String(),
-		end: t.String(),
-	});
+	export const JobSelectQuery = t.Partial(
+		t.Object({
+			start: t.String(),
+			end: t.String(),
+			status: t.UnionEnum(
+				["scheduled", "pending", "in_progress", "completed", "none"],
+				{
+					default: "none",
+				},
+			),
+		}),
+	);
 
 	const _JobCreateBody = createInsertSchema(jobTable);
 
