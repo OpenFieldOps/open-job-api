@@ -26,7 +26,8 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://devuser:devpass@localhost:5433/devdb
+      DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
+      S3_ENDPOINT: http://localhost:9000
 
     steps:
       - name: Checkout backend repo
