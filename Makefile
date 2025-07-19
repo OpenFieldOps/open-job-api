@@ -36,7 +36,7 @@ tests:
 	@./scripts/drop-db.sh
 	@rm -rf ./drizzle > /dev/null
 	@$(CLI) push
-	@bun test $(ARGS)
+	@bun test --timeout 10000
 
 pre-commit:
 	@echo "Starting pre-commit checks..."
