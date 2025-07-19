@@ -36,7 +36,7 @@ tests:
 	@./scripts/drop-db.sh
 	@rm -rf ./drizzle > /dev/null
 	@$(CLI) push
-	@bun test
+	@bun test $(ARGS)
 
 pre-commit:
 	@echo "Starting pre-commit checks..."

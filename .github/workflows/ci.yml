@@ -42,6 +42,9 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup env
+        run: cp ./.env.example ./.env
+
       - name: Install backend dependencies
         run: bun install --frozen-lockfile
 

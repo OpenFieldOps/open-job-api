@@ -22,7 +22,7 @@ export const config: Config = {
 	server: {
 		backend_port: parseInt(process.env.BACKEND_PORT || "4000", 10),
 		frontend_port: parseInt(process.env.FRONTEND_PORT || "8080", 10),
-		jwt_secret: process.env.JWT_SECRET || "default_secret",
+		jwt_secret: process.env.JWT_SECRET || "MySuperSecret",
 	},
 	database: {
 		url:

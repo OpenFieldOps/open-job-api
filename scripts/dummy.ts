@@ -18,12 +18,11 @@ export const dummyOperatorUser = {
 };
 
 export async function createDummyData() {
-	const user = (await AuthService.registerUserAdmin(
-		dummyUser,
-	)) as typeof AuthModel.AuthenticatedUserSuccessResponse.static;
-	const operator = (await AuthService.registerUserAdmin(
-		dummyOperatorUser,
-	)) as typeof AuthModel.AuthenticatedUserSuccessResponse.static;
+	const [user, operator] = (await Promise.all([
+		AuthService.registerUserAdmin(dummyUser),
+		AuthService.registerUserAdmin(dummyOperatorUser),
+	])) as (typeof AuthModel.AuthenticatedUserSuccessResponse.static)[];
+
 	return {
 		user,
 		operator,
