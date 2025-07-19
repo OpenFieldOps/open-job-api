@@ -33,7 +33,7 @@ dummy-data:
 	bun run scripts/dummy.ts
 
 tests:
-	@./scripts/drop-db.sh > /dev/null
+	@./scripts/drop-db.sh
 	@rm -rf ./drizzle > /dev/null
 	make db-push > /dev/null
 	@bun test $(ARGS)
