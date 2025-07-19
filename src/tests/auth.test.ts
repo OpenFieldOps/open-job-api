@@ -22,7 +22,7 @@ describe("Auth Tests", () => {
 		expect(res.status).toBe(409);
 	});
 
-	it("shoultd pass auth login test", async () => {
+	it("should pass auth login test", async () => {
 		const res = await api.auth.login.post({
 			email: testUser.email,
 			password: testUser.password,
