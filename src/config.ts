@@ -20,14 +20,14 @@ type Config = {
 
 export const config: Config = {
 	server: {
-		backend_port: parseInt(process.env.BACKEND_PORT || "3000", 10),
-		frontend_port: parseInt(process.env.FRONTEND_PORT || "3001", 10),
+		backend_port: parseInt(process.env.BACKEND_PORT || "4000", 10),
+		frontend_port: parseInt(process.env.FRONTEND_PORT || "8080", 10),
 		jwt_secret: process.env.JWT_SECRET || "default_secret",
 	},
 	database: {
 		url:
 			process.env.DATABASE_URL ||
-			"postgres://user:password@localhost:5432/dbname",
+			"postgres://devuser:devpass@localhost:5432/devdb",
 	},
 	storage: {
 		s3_access_key_id: process.env.S3_ACCESS_KEY_ID || "your_access_key_id",

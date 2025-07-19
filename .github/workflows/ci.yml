@@ -28,6 +28,10 @@ jobs:
     env:
       DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
       S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadminpass
+      S3_BUCKET_NAME: dev-bucket
+      JWT_SECRET: MySuperSecret
 
     steps:
       - name: Checkout backend repo
