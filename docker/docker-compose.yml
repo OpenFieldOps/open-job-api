@@ -1,14 +1,14 @@
 services:
-  dev-postgres:
+  postgres:
     image: postgres:17.5
-    container_name: dev-postgres
+    container_name: postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: devuser
       POSTGRES_PASSWORD: devpass
       POSTGRES_DB: devdb
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -52,6 +52,25 @@ services:
       "
     networks:
       - devnet
+  api:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql://devuser:devpass@postgres:5432/devdb
+      S3_ENDPOINT: http://minio:9000
+    depends_on:
+      - minio
+      - minio-init
+      - postgres
+    networks:
+      - devnet
+    profiles:
+      - production
 
 volumes:
   postgres-data:

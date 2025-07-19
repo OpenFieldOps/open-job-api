@@ -20,6 +20,7 @@ export const authPlugin = new Elysia({
 			body: AuthModel.RegisterUserBody,
 			response: {
 				409: t.String(),
+				500: t.String(),
 				200: AuthModel.AuthenticatedUserSuccessResponse,
 			},
 			detail: {

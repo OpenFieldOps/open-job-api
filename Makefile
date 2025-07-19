@@ -1,7 +1,8 @@
-CLI = bun run scripts/drizzle.ts
-COMPOSE = docker compose
-TARGET=bun
-OUT=server
+CLI = bunx drizzle-kit
+COMPOSE = cd docker && docker compose
+TARGET = bun
+NAME = job-api
+OUT = $(NAME)
 
 all:
 	( make db-studio & pid=$$!; make api-start; kill $$pid )
@@ -10,44 +11,31 @@ compose-up:
 	@$(COMPOSE) up -d
 	@sleep 2
 
+compose-prod:
+	@$(COMPOSE) --profile production up api
+
+compose-prod-rebuild:
+	@$(COMPOSE) --profile production up --build api
+
 compose-rm:
 	@$(COMPOSE) down -v --remove-orphans
 
+db-push:
+	$(CLI) push
 
 db-generate:
 	$(CLI) generate
 
-db-migrate:
-	$(CLI) migrate
-	$(CLI) generate
-	$(CLI) push
-
-db-rm:
-	make compose-up
-	@rm -rf ./drizzle
-
-db-reset:
-	make db-rm
-	make compose-up
-	make db-migrate
-	make api-dummy-data
-
 db-studio:
 	$(CLI) studio
 
-api-install:
-	bun install
-
-api-start:
-	bun dev
-
-api-dummy-data:
+dummy-data:
 	bun run scripts/dummy.ts
 
 tests:
 	@./scripts/drop-db.sh > /dev/null
 	@rm -rf ./drizzle > /dev/null
-	@$(CLI) push > /dev/null
+	make db-push > /dev/null
 	@bun test $(ARGS)
 
 pre-commit:
@@ -56,15 +44,14 @@ pre-commit:
 		clear && echo "Pre-commit checks passed successfully." || \
 		{ echo "Pre-commit checks failed. See the messages above."; exit 1; }
 
+docker-build:
+	cp ./docker/Dockerfile ./
+	docker build --pull -t $(NAME) .
+	rm Dockerfile
+
 build:
 	mkdir -p ./out
-	bun build \
-	--compile \
-	--minify-whitespace \
-	--minify-syntax \
-	--target $(TARGET) \
-	--outfile ./out/$(OUT) \
-	./src/index.ts
+	bun build --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/index.ts
 
 	chmod +x ./out/$(OUT)
 

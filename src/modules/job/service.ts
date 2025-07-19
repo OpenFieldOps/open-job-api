@@ -148,11 +148,20 @@ export abstract class JobService {
 		await FileStorageService.deleteFile(fileId);
 	}
 
-	static async updateJob(body: JobModel.JobUpdateBody) {
+	static async updateJob(
+		body: JobModel.JobUpdateBody,
+		user: UserModel.UserWithoutPassword,
+	) {
+		const filteredBody =
+			user.role === "admin"
+				? body
+				: {
+						status: body.status,
+					};
 		await db
 			.update(jobTable)
-			.set(body)
-			.where(eq(jobTable.id, body.id))
+			.set(filteredBody)
+			.where(userJobAccessCondition(user.id, body.id))
 			.returning();
 	}
 

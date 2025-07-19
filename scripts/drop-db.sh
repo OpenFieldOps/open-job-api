@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DB_HOST=localhost
-DB_PORT=5433
+DB_PORT=5432
 DB_NAME=devdb
 DB_USER=devuser
 

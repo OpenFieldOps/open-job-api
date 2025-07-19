@@ -108,7 +108,7 @@ export const jobPlugin = new Elysia({
 			},
 		},
 	)
-	.patch("/", ({ body }) => JobService.updateJob(body), {
-		role: "admin",
+	.patch("/", ({ body, user }) => JobService.updateJob(body, user), {
+		user: true,
 		body: JobModel.JobUpdateBody,
 	});
