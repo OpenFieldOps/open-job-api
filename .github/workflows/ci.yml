@@ -48,16 +48,6 @@ jobs:
       - name: Install backend dependencies
         run: bun install --frozen-lockfile
 
-      - name: Wait for Postgres via Bun (reliable)
-        run: |
-          for i in {1..15}; do
-            bunx drizzle-kit introspect && exit 0
-            echo "Waiting for Postgres via DrizzleKit..."
-            sleep 2
-          done
-          echo "Postgres did not start in time" >&2
-          exit 1
-
       - name: Generate Drizzle types
         run: make db-generate
 
