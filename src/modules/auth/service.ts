@@ -80,7 +80,9 @@ export abstract class AuthService {
 
 		if (!user) return AppError.NotFound;
 
-		if (!(await Bun.password.verify(loginBody.password, user.password)))
+		if (
+			!(await Bun.password.verify(loginBody.password, user.password, "argon2d"))
+		)
 			return AppError.Unauthorized;
 		return await signUserWithoutPassword(user);
 	}
