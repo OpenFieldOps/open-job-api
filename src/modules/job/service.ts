@@ -5,8 +5,11 @@ import {
 	fileTable,
 	jobFiles,
 	jobTable,
+	jobTaskTable,
 	userAdminTable,
 } from "../../services/db/schema";
+import { RealtimeModel } from "../../services/redis/model";
+import { sendUserMessage } from "../../services/redis/utils";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
 import type { UserModel } from "../user/model";
@@ -17,6 +20,14 @@ function userJobAccessCondition(userId: number, jobId: number) {
 		eq(jobTable.id, jobId),
 		or(eq(jobTable.assignedTo, userId), eq(jobTable.createdBy, userId)),
 	);
+}
+
+function withUserJob(userId: number, jobId: number) {
+	return db
+		.$with("job")
+		.as(
+			db.select().from(jobTable).where(userJobAccessCondition(userId, jobId)),
+		);
 }
 
 export abstract class JobService {
@@ -55,6 +66,53 @@ export abstract class JobService {
 		)[0];
 
 		return status(200, job);
+	}
+
+	static async updateJob(
+		body: JobModel.JobUpdateBody,
+		user: UserModel.UserWithoutPassword,
+	) {
+		const filteredBody =
+			user.role === "admin"
+				? body
+				: {
+						status: body.status,
+					};
+		const job = (
+			await db
+				.update(jobTable)
+				.set(filteredBody)
+				.where(userJobAccessCondition(user.id, body.id))
+				.returning()
+		).pop();
+
+		if (!job) {
+			return AppError.Unauthorized;
+		}
+		if (job.assignedTo) {
+			sendUserMessage(
+				user.id === job.assignedTo ? job.createdBy : job.assignedTo,
+				RealtimeModel.RealtimeMessageType.JobUpdated,
+				job,
+			);
+		}
+	}
+
+	static async deleteJob(jobId: number, userId: number) {
+		try {
+			const deleted = await db
+				.delete(jobTable)
+				.where(userJobAccessCondition(userId, jobId))
+				.returning();
+
+			if (deleted.length === 0) {
+				return AppError.NotFound;
+			}
+
+			return status(200, null);
+		} catch {
+			return AppError.Unauthorized;
+		}
 	}
 
 	static async getJobById(id: number, userId: number) {
@@ -148,37 +206,78 @@ export abstract class JobService {
 		await FileStorageService.deleteFile(fileId);
 	}
 
-	static async updateJob(
-		body: JobModel.JobUpdateBody,
-		user: UserModel.UserWithoutPassword,
-	) {
-		const filteredBody =
-			user.role === "admin"
-				? body
-				: {
-						status: body.status,
-					};
-		await db
-			.update(jobTable)
-			.set(filteredBody)
-			.where(userJobAccessCondition(user.id, body.id))
-			.returning();
+	static async getJobTasks(jobId: number, userId: number) {
+		const tasks = await db
+			.select({
+				id: jobTaskTable.id,
+				title: jobTaskTable.title,
+				completed: jobTaskTable.completed,
+				jobId: jobTaskTable.jobId,
+			})
+			.from(jobTaskTable)
+			.leftJoin(jobTable, eq(jobTable.id, jobTaskTable.jobId))
+			.where(
+				and(
+					eq(jobTaskTable.jobId, jobId),
+					or(eq(jobTable.assignedTo, userId), eq(jobTable.createdBy, userId)),
+				),
+			);
+
+		return status(200, tasks);
 	}
 
-	static async deleteJob(jobId: number, userId: number) {
-		try {
-			const deleted = await db
-				.delete(jobTable)
-				.where(userJobAccessCondition(userId, jobId))
-				.returning();
+	static async createJobTask(
+		jobId: number,
+		body: JobModel.JobTaskCreateBody,
+		userId: number,
+	) {
+		const task = (
+			await db
+				.with(withUserJob(userId, jobId))
+				.insert(jobTaskTable)
+				.values({
+					jobId,
+					title: body.title,
+					completed: body.completed,
+				})
+				.returning()
+		).pop();
 
-			if (deleted.length === 0) {
-				return AppError.NotFound;
-			}
-
-			return status(200, null);
-		} catch {
+		if (!task) {
 			return AppError.Unauthorized;
 		}
+
+		return status(200, task);
+	}
+
+	static async updateJobTask(
+		jobId: number,
+		body: JobModel.JobTaskUpdateBody,
+		userId: number,
+	) {
+		const task = await db
+			.with(withUserJob(userId, jobId))
+			.update(jobTaskTable)
+			.set({
+				title: body.title,
+				completed: body.completed,
+			})
+			.where(eq(jobTaskTable.id, body.id))
+			.returning();
+
+		return status(200, task);
+	}
+	static async deleteJobTask(jobId: number, taskId: number, userId: number) {
+		const task = await db
+			.with(withUserJob(userId, jobId))
+			.delete(jobTaskTable)
+			.where(eq(jobTaskTable.id, taskId))
+			.returning();
+
+		if (task.length === 0) {
+			return AppError.NotFound;
+		}
+
+		return status(200, null);
 	}
 }

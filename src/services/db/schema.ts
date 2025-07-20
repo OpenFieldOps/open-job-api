@@ -45,6 +45,13 @@ export const jobTable = pgTable("job", {
 	status: jobStatusEnum("status").notNull().default("scheduled"),
 });
 
+export const jobTaskTable = pgTable("jobTask", {
+	id: defaultId(),
+	completed: boolean().default(false).notNull(),
+	title: defaultVarChar(),
+	jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
+});
+
 export const notificationTypeEnum = pgEnum("notification_type", [
 	"job_assigned",
 	"job_updated",
@@ -101,3 +108,10 @@ export const userNotificationRelation = relations(
 		}),
 	}),
 );
+
+export const jobTaskRelation = relations(jobTaskTable, ({ one }) => ({
+	job: one(jobTable, {
+		fields: [jobTaskTable.jobId],
+		references: [jobTable.id],
+	}),
+}));

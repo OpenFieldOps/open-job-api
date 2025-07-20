@@ -9,7 +9,9 @@ import { jobPlugin } from "./modules/job/index";
 import { userPlugin } from "./modules/user";
 import { UserModel } from "./modules/user/model";
 import "./services/db/db";
+import "./services/redis/client";
 import { filePlugin } from "./modules/files";
+import { realtimePlugin } from "./modules/realtime";
 
 export const app = new Elysia({
 	name: "App",
@@ -28,6 +30,7 @@ export const app = new Elysia({
 	.use(cors())
 	.use(authPlugin)
 	.use(userPlugin)
+	.use(realtimePlugin)
 	.use(jobPlugin)
 	.use(filePlugin);
 

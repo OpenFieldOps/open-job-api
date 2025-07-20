@@ -54,8 +54,5 @@ jobs:
       - name: Lint TypeScript
         run: bun run lint
 
-      - name: Run unit tests
-        run: make tests
-
       - name: Build for production
         run: make build

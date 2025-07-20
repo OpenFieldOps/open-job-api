@@ -12,6 +12,8 @@ declare global {
 			S3_BUCKET: string;
 			S3_ENDPOINT: string;
 
+			REDIS_URL: string;
+
 			RESEND_KEY: string;
 		}
 

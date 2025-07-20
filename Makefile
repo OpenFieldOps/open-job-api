@@ -12,9 +12,11 @@ compose-up:
 	@sleep 2
 
 compose-prod:
+	cp ./docker/Dockerfile ./
 	@$(COMPOSE) --profile production up api
 
 compose-prod-rebuild:
+	cp ./docker/Dockerfile ./
 	@$(COMPOSE) --profile production up --build api
 
 compose-rm:

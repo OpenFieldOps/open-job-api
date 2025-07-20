@@ -9,7 +9,7 @@ export const jwtPlugin = jwt({
 	secret: config.server.jwt_secret,
 });
 
-async function userFromAuthorizationHeader(
+export async function userFromAuthorizationHeader(
 	authorization: string | undefined,
 ): Promise<UserModel.UserWithoutPassword | undefined> {
 	if (!authorization) return undefined;

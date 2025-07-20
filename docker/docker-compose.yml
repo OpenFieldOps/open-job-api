@@ -13,12 +13,18 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U devuser"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
     networks:
       - devnet
-
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - devnet
   minio:
     image: minio/minio:latest
     container_name: dev-minio
@@ -36,7 +42,7 @@ services:
       - devnet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
+      interval: 5s
       timeout: 10s
       retries: 5
 
@@ -63,10 +69,12 @@ services:
     environment:
       DATABASE_URL: postgresql://devuser:devpass@postgres:5432/devdb
       S3_ENDPOINT: http://minio:9000
+      REDIS_URL: redis://redis:6379
     depends_on:
       - minio
       - minio-init
       - postgres
+      - redis
     networks:
       - devnet
     profiles:

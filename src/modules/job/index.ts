@@ -49,6 +49,24 @@ export const jobPlugin = new Elysia({
 			},
 		},
 	)
+	.delete(
+		"/:id",
+		({ params: { id }, user }) => JobService.deleteJob(id, user.id),
+		{
+			params: t.Object({
+				id: t.Number({ description: "ID of the Job to delete" }),
+			}),
+			role: "admin",
+			detail: {
+				summary: "Delete Job",
+				description: "Delete an Job by its ID.",
+			},
+		},
+	)
+	.patch("/", ({ body, user }) => JobService.updateJob(body, user), {
+		user: true,
+		body: JobModel.JobUpdateBody,
+	})
 	.get(
 		"/documents/:jobId",
 		async ({ user, params: { jobId } }) =>
@@ -94,21 +112,60 @@ export const jobPlugin = new Elysia({
 			},
 		},
 	)
-	.delete(
-		"/:id",
-		({ params: { id }, user }) => JobService.deleteJob(id, user.id),
+	.get(
+		"/task/:jobId",
+		async ({ params: { jobId }, user }) =>
+			JobService.getJobTasks(jobId, user.id),
 		{
+			user: true,
 			params: t.Object({
-				id: t.Number({ description: "ID of the Job to delete" }),
+				jobId: t.Number(),
 			}),
-			role: "admin",
 			detail: {
-				summary: "Delete Job",
-				description: "Delete an Job by its ID.",
+				summary: "Get Job Tasks",
+				description: "Retrieve all Tasks for a specific Job.",
 			},
 		},
 	)
-	.patch("/", ({ body, user }) => JobService.updateJob(body, user), {
-		user: true,
-		body: JobModel.JobUpdateBody,
-	});
+
+	.post(
+		"/task",
+		async ({ body, user }) =>
+			JobService.createJobTask(body.jobId, body, user.id),
+		{
+			user: true,
+			body: JobModel.JobTaskCreateBody,
+			detail: {
+				summary: "Create Job Task",
+				description: "Create a new Task for a specific Job.",
+			},
+		},
+	)
+	.patch(
+		"/task",
+		async ({ body, user }) => JobService.updateJobTask(body.id, body, user.id),
+		{
+			user: true,
+			body: JobModel.JobTaskUpdateBody,
+			detail: {
+				summary: "Update Job Task",
+				description: "Update an existing Task for a specific Job.",
+			},
+		},
+	)
+	.delete(
+		"/delete-task",
+		async ({ body: { jobId, taskId }, user }) =>
+			JobService.deleteJobTask(jobId, taskId, user.id),
+		{
+			user: true,
+			body: t.Object({
+				jobId: t.Number(),
+				taskId: t.Number(),
+			}),
+			detail: {
+				summary: "Delete Job Task",
+				description: "Delete a specific Task from a Job.",
+			},
+		},
+	);

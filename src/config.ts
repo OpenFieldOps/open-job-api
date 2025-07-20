@@ -13,6 +13,9 @@ type Config = {
 		s3_bucket_name: string;
 		s3_endpoint: string;
 	};
+	redis: {
+		url: string;
+	};
 	logging: {
 		level: string;
 	};
@@ -35,6 +38,9 @@ export const config: Config = {
 			process.env.S3_SECRET_ACCESS_KEY || "your_secret_access_key",
 		s3_bucket_name: process.env.S3_BUCKET_NAME || "your_bucket_name",
 		s3_endpoint: process.env.S3_ENDPOINT || "https://s3.amazonaws.com",
+	},
+	redis: {
+		url: process.env.REDIS_URL || "redis://localhost:6379",
 	},
 	logging: {
 		level: process.env.LOGGING_LEVEL || "info",

@@ -9,7 +9,7 @@ export const filePlugin = new Elysia({
 	.use(authMacroPlugin)
 	.get(
 		"/:id",
-		async ({ params: { id } }) => await FileStorageService.getFileUrl(id),
+		async ({ params: { id } }) => FileStorageService.getFileUrl(id),
 		{
 			params: t.Object({
 				id: t.String(),

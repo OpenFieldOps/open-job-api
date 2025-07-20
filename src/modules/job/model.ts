@@ -1,6 +1,6 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { status, t } from "elysia";
-import { jobTable } from "../../services/db/schema";
+import { jobTable, type jobTaskTable } from "../../services/db/schema";
 
 export namespace JobModel {
 	export type Job = typeof Job.static;
@@ -8,6 +8,9 @@ export namespace JobModel {
 	export type JobList = typeof JobList.static;
 	export type JobCreateBody = typeof JobCreateBody.static;
 	export type JobUpdateBody = typeof JobUpdateBody.static;
+	export type JobTaskCreateBody = typeof JobTaskCreateBody.static;
+	export type JobTaskUpdateBody = typeof JobTaskUpdateBody.static;
+	export type JobTask = typeof jobTaskTable.$inferSelect;
 
 	export const JobStatusString = t.String();
 
@@ -58,6 +61,19 @@ export namespace JobModel {
 		status: t.Optional(
 			t.UnionEnum(["scheduled", "pending", "in_progress", "completed"]),
 		),
+	});
+
+	export const JobTaskCreateBody = t.Object({
+		title: t.String({ minLength: 3 }),
+
+		completed: t.Optional(t.Boolean()),
+		jobId: t.Integer(),
+	});
+
+	export const JobTaskUpdateBody = t.Object({
+		id: t.Integer(),
+		title: t.Optional(t.String({ minLength: 3 })),
+		completed: t.Optional(t.Boolean()),
 	});
 
 	export const JobList = t.Array(Job);
