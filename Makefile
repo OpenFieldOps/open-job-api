@@ -1,7 +1,7 @@
 CLI = bunx drizzle-kit
 COMPOSE = cd docker && docker compose
 TARGET = bun
-NAME = job-api
+NAME = open-job-api
 OUT = $(NAME)
 
 all:
@@ -9,7 +9,6 @@ all:
 
 compose-up:
 	@$(COMPOSE) up -d
-	@sleep 2
 
 compose-prod:
 	cp ./docker/Dockerfile ./
@@ -31,14 +30,41 @@ db-generate:
 db-studio:
 	$(CLI) studio
 
+db-reset:
+	@./scripts/drop-db.sh
+	@$(CLI) push
+	@$(CLI) generate
+
 dummy-data:
 	bun run scripts/dummy.ts
 
+stress-data:
+	@pids=""; \
+	for i in {1..100}; do \
+		echo "Running stress data with parameter $$i"; \
+		bun run scripts/stress_data.ts $$i & \
+		pids="$$pids $$!"; \
+	done; \
+	echo "Waiting for all stress tests to complete..."; \
+	for pid in $$pids; do \
+		wait $$pid; \
+	done; \
+	echo "All stress tests completed."
+
+stress-user:
+	@for i in {1..50}; do \
+		echo "Running stress data with parameter $$i"; \
+		bun run scripts/stress_user.ts $$i & \
+		sleep 0.7; \
+	done; \
+	echo "Waiting for all remaining stress tests to complete..."; \
+	wait; \
+	echo "All stress tests completed."
+
 tests:
 	@./scripts/drop-db.sh
-	@rm -rf ./drizzle > /dev/null
 	@$(CLI) push
-	@bun test --timeout 10000
+	@bun test 
 
 pre-commit:
 	@echo "Starting pre-commit checks..."
@@ -53,7 +79,7 @@ docker-build:
 
 build:
 	mkdir -p ./out
-	bun build --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/index.ts
+	bun build --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/main.ts
 
 	chmod +x ./out/$(OUT)
 

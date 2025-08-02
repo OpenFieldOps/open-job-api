@@ -1,15 +1,15 @@
-import { beforeAll } from "bun:test";
+import { afterEach, beforeEach } from "bun:test";
 import { treaty } from "@elysiajs/eden";
-import { createDummyData } from "../../scripts/dummy";
-import { app } from "..";
-import type { AuthModel } from "../modules/auth/model";
+import { sql } from "drizzle-orm";
+import { app } from "../main";
+import { db } from "../services/db/db";
 
 export const api = treaty(app);
-export let dummyAuthenticatedUser: AuthModel.AuthenticatedUserSuccessResponse;
-export let dummyOperatorUser: AuthModel.AuthenticatedUserSuccessResponse;
 
-beforeAll(async () => {
-	const res = await createDummyData();
-	dummyAuthenticatedUser = res.user;
-	dummyOperatorUser = res.operator;
+beforeEach(async () => {
+  await db.execute(sql`BEGIN`);
+});
+
+afterEach(async () => {
+  await db.execute(sql`ROLLBACK`);
 });

@@ -16,6 +16,7 @@ export namespace UserModel {
 		email: t.String(),
 		firstName: t.String(),
 		lastName: t.String(),
+		avatar: t.Union([t.String(), t.Null()])
 	});
 
 	export type UserInfo = typeof UserInfo.static;

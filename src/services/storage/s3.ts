@@ -5,71 +5,56 @@ import { db } from "../db/db";
 import { fileTable } from "../db/schema";
 
 const s3Client = new S3Client({
-	accessKeyId: config.storage.s3_access_key_id,
-	secretAccessKey: config.storage.s3_secret_access_key,
-	bucket: config.storage.s3_bucket_name,
-	endpoint: config.storage.s3_endpoint,
+  accessKeyId: config.storage.s3_access_key_id,
+  secretAccessKey: config.storage.s3_secret_access_key,
+  bucket: config.storage.s3_bucket_name,
+  endpoint: config.storage.s3_endpoint,
 });
 
-export type FileId = string;
+type FileId = string;
 
 export abstract class FileStorageService {
-	static async uploadFile(file: File): Promise<FileId> {
-		const fileId: FileId = (
-			await db
-				.insert(fileTable)
-				.values({
-					fileName: file.name,
-				})
-				.returning({ id: fileTable.id })
-		)[0].id;
+  static async uploadFile(file: File): Promise<FileId> {
+    const fileId: FileId = (
+      await db
+        .insert(fileTable)
+        .values({
+          fileName: file.name,
+        })
+        .returning({ id: fileTable.id })
+    )[0].id;
 
-		const s3File = s3Client.file(fileId);
+    const s3File = s3Client.file(fileId);
 
-		await s3File.write(file);
+    await s3File.write(file);
 
-		return fileId;
-	}
+    return fileId;
+  }
 
-	static async deleteFile(fileId: FileId): Promise<void> {
-		const s3File = s3Client.file(fileId);
-		await s3File.delete();
-		await db.delete(fileTable).where(eq(fileTable.id, fileId));
-	}
+  static resolveFile<T extends Record<string, unknown>>(
+    obj: T,
+    fileKey: keyof T
+  ): T {
+    if (obj[fileKey] && typeof obj[fileKey] === "string") {
+      const fileId = obj[fileKey] as unknown as FileId;
+      obj[fileKey] = FileStorageService.getFileUrl(
+        fileId
+      ) as unknown as T[keyof T];
+    }
+    return obj;
+  }
 
-	static getFileUrl(fileId: FileId): string {
-		return s3Client.presign(fileId.toString(), {
-			expiresIn: 3600,
-			method: "GET",
-			type: "application/octet-stream",
-		});
-	}
-}
+  static async deleteFile(fileId: FileId): Promise<void> {
+    const s3File = s3Client.file(fileId);
+    await s3File.delete();
+    await db.delete(fileTable).where(eq(fileTable.id, fileId));
+  }
 
-if (Bun.env.NODE_ENV === "test" || Bun.env.NODE_ENV === "development") {
-	// we cannot use minio in github actions
-	FileStorageService.uploadFile = async (file: File): Promise<FileId> => {
-		const fileId: FileId | undefined = (
-			await db
-				.insert(fileTable)
-				.values({
-					fileName: file.name,
-				})
-				.returning({ id: fileTable.id })
-		).pop()?.id;
-
-		if (!fileId) {
-			throw new Error("Failed to create file record in database");
-		}
-
-		return fileId;
-	};
-
-	FileStorageService.deleteFile = async (fileId: FileId): Promise<void> => {
-		await db.delete(fileTable).where(eq(fileTable.id, fileId));
-	};
-
-	FileStorageService.getFileUrl = (fileId: FileId): string => {
-		return `/files/${fileId}`;
-	};
+  static getFileUrl(fileId: FileId): string {
+    return s3Client.presign(fileId.toString(), {
+      expiresIn: 3600,
+      method: "GET",
+      type: "application/octet-stream",
+    });
+  }
 }

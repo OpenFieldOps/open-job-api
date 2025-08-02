@@ -8,70 +8,108 @@ import { AuthService } from "../auth/service";
 import { UserModel } from "./model";
 
 export abstract class UserService {
-	static async updateUserInfo(body: UserModel.UserUpdateBody, userId: number) {
-		await db
-			.update(userTable)
-			.set({
-				firstName: body.firstName,
-				lastName: body.lastName,
-			})
-			.where(eq(userTable.id, userId));
-	}
+  static async updateUserInfo(body: UserModel.UserUpdateBody, userId: number) {
+    await db
+      .update(userTable)
+      .set({
+        firstName: body.firstName,
+        lastName: body.lastName,
+      })
+      .where(eq(userTable.id, userId));
+  }
 
-	static async updateUserAvatar(file: File, userId: number) {
-		const fileId = await FileStorageService.uploadFile(file);
-		await db
-			.update(userTable)
-			.set({
-				avatar: fileId,
-			})
-			.where(eq(userTable.id, userId));
-	}
+  static async updateUserAvatar(file: File, userId: number) {
+    const fileId = await FileStorageService.uploadFile(file);
 
-	static async createAssignedUser(
-		newUser: AuthModel.RegisterUserBody,
-		assignedTo: number,
-	) {
-		const res = await AuthService.registerUser(
-			newUser,
-			UserModel.UserRoleEnum.user,
-			assignedTo,
-		);
+    const oldFileId = await db
+      .select({ avatar: userTable.avatar })
+      .from(userTable)
+      .where(eq(userTable.id, userId))
+      .then((res) => res[0]?.avatar);
 
-		if (res === AppError.ResultEnum.Conflict) {
-			return AppError.Conflict;
-		}
+    await db
+      .update(userTable)
+      .set({
+        avatar: fileId,
+      })
+      .where(eq(userTable.id, userId));
 
-		return {
-			id: res.id,
-			username: res.username,
-			email: res.email,
-			firstName: res.firstName,
-			lastName: res.lastName,
-		} as UserModel.UserInfo;
-	}
+    if (oldFileId) {
+      await FileStorageService.deleteFile(oldFileId);
+    }
 
-	static async fetchAssignedUsers(
-		assignedTo: number,
-	): Promise<UserModel.UserInfo[]> {
-		const users = await db
-			.select({
-				id: userTable.id,
-				username: userTable.username,
-				email: userTable.email,
-				firstName: userTable.firstName,
-				lastName: userTable.lastName,
-			})
-			.from(userTable)
-			.innerJoin(
-				userAdminTable,
-				and(
-					not(eq(userTable.id, assignedTo)),
-					eq(userTable.id, userAdminTable.userId),
-					eq(userAdminTable.adminId, assignedTo),
-				),
-			);
+    return FileStorageService.getFileUrl(fileId);
+  }
 
-		return users;
-	}
+  static async createAssignedUser(
+    newUser: AuthModel.RegisterUserBody,
+    assignedTo: number
+  ) {
+    const res = await AuthService.registerUser(
+      newUser,
+      UserModel.UserRoleEnum.user,
+      assignedTo
+    );
+
+    if (res === AppError.ResultEnum.Conflict) {
+      return AppError.Conflict;
+    }
+
+    return {
+      id: res.id,
+      username: res.username,
+      email: res.email,
+      firstName: res.firstName,
+      lastName: res.lastName,
+    } as UserModel.UserInfo;
+  }
+
+  static async deleteAssignedUser(userId: number, assignedUserId: number) {
+    try {
+      const withUser = db.$with("withUser").as(
+        db
+          .select()
+          .from(userTable)
+          .innerJoin(
+            userAdminTable,
+            and(
+              eq(userAdminTable.userId, assignedUserId),
+              eq(userAdminTable.adminId, userId)
+            )
+          )
+          .limit(1)
+      );
+
+      await db.with(withUser).delete(userTable);
+
+      return;
+    } catch {
+      return AppError.Unauthorized;
+    }
+  }
+
+  static async fetchAssignedUsers(
+    assignedTo: number
+  ): Promise<UserModel.UserInfo[]> {
+    const users = await db
+      .select({
+        id: userTable.id,
+        username: userTable.username,
+        email: userTable.email,
+        firstName: userTable.firstName,
+        lastName: userTable.lastName,
+        avatar: userTable.avatar,
+      })
+      .from(userTable)
+      .innerJoin(
+        userAdminTable,
+        and(
+          not(eq(userTable.id, assignedTo)),
+          eq(userTable.id, userAdminTable.userId),
+          eq(userAdminTable.adminId, assignedTo)
+        )
+      );
+
+    return users.map((el) => FileStorageService.resolveFile(el, "avatar"));
+  }
 }

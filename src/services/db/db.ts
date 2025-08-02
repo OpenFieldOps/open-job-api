@@ -4,29 +4,24 @@ import { config } from "../../config";
 // biome-ignore lint/performance/noNamespaceImport: This is a common pattern for importing schema in Drizzle ORM.
 import * as schema from "./schema";
 
-const client = new SQL(config.database.url);
-
-export const sqlLogs: string[] = [];
+const client = new SQL(config.database.url, {
+  max: 1,
+});
 
 export const db = drizzle({
-	client,
-	schema: schema,
-	logger: {
-		logQuery(query) {
-			sqlLogs.push(query);
-		},
-	},
+  client,
+  schema: schema,
 });
 
 db.$client
-	.connect()
-	.then(() => {
-		console.log(
-			"Connected to the database successfully at",
-			config.database.url,
-		);
-	})
-	.catch((error) => {
-		console.error("Failed to connect to the database:", error);
-		process.exit(1);
-	});
+  .connect()
+  .then(() => {
+    console.log(
+      "Connected to the database successfully at",
+      config.database.url
+    );
+  })
+  .catch((error) => {
+    console.error("Failed to connect to the database:", error);
+    process.exit(1);
+  });
