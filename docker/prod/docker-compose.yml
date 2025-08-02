@@ -63,7 +63,7 @@ services:
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET_NAME: dev-bucket
       S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadminpasss
+      S3_SECRET_ACCESS_KEY: minioadminpass
       BACKEND_PORT: 4000
       JWT_SECRET: MySuperSecret
     depends_on:
