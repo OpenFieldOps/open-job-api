@@ -12,6 +12,7 @@ type Config = {
     s3_secret_access_key: string;
     s3_bucket_name: string;
     s3_endpoint: string;
+    s3_user_endpoint: string;
   };
   logging: {
     level: string;
@@ -20,24 +21,24 @@ type Config = {
 
 export const config: Config = {
   server: {
-    backend_port: parseInt(process.env.BACKEND_PORT || "4000", 10),
-    frontend_port: parseInt(process.env.FRONTEND_PORT || "8080", 10),
-    jwt_secret: process.env.JWT_SECRET || "MySuperSecret",
+    backend_port: parseInt(Bun.env.BACKEND_PORT || "4000", 10),
+    frontend_port: parseInt(Bun.env.FRONTEND_PORT || "8080", 10),
+    jwt_secret: Bun.env.JWT_SECRET || "MySuperSecret",
   },
   database: {
     url:
-      process.env.DATABASE_URL ||
-      "postgres://devuser:devpass@localhost:5432/devdb",
+      Bun.env.DATABASE_URL || "postgres://devuser:devpass@localhost:5432/devdb",
   },
   storage: {
-    s3_access_key_id: process.env.S3_ACCESS_KEY_ID || "your_access_key_id",
+    s3_access_key_id: Bun.env.S3_ACCESS_KEY_ID || "your_access_key_id",
     s3_secret_access_key:
-      process.env.S3_SECRET_ACCESS_KEY || "your_secret_access_key",
-    s3_bucket_name: process.env.S3_BUCKET_NAME || "your_bucket_name",
-    s3_endpoint: process.env.S3_ENDPOINT || "https://s3.amazonaws.com",
+      Bun.env.S3_SECRET_ACCESS_KEY || "your_secret_access_key",
+    s3_bucket_name: Bun.env.S3_BUCKET_NAME || "your_bucket_name",
+    s3_endpoint: Bun.env.S3_ENDPOINT || "http://localhost:9000",
+    s3_user_endpoint: Bun.env.S3_USER_ENDPOINT || "http://localhost:9000",
   },
   logging: {
-    level: process.env.LOGGING_LEVEL || "info",
+    level: Bun.env.LOGGING_LEVEL || "info",
   },
 };
 

@@ -77,6 +77,16 @@ docker-build:
 	docker build --pull -t $(NAME) .
 	rm Dockerfile
 
+docker-push:
+	cp ./docker/Dockerfile ./
+	docker buildx build \
+		--platform linux/amd64,linux/arm64/v8 \
+		--pull \
+		--tag suleymanrs/$(NAME):latest \
+		--push \
+		.
+	rm Dockerfile
+
 build:
 	mkdir -p ./out
 	bun build --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/main.ts

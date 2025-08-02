@@ -55,6 +55,7 @@ export abstract class FileStorageService {
       expiresIn: 3600,
       method: "GET",
       type: "application/octet-stream",
+      endpoint: config.storage.s3_user_endpoint,
     });
   }
 }

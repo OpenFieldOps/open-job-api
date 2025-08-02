@@ -52,17 +52,20 @@ services:
     networks:
       - devnet
   api:
-    build:
-      context: ../
-      dockerfile: Dockerfile
+    build: ../
+    container_name: api
     ports:
       - "4000:4000"
-    env_file:
-      - ../.env
     environment:
       DATABASE_URL: postgresql://devuser:devpass@postgres:5432/devdb
       S3_ENDPOINT: http://minio:9000
+      S3_BUCKET_NAME: dev-bucket
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadminpass
+      S3_USER_ENDPOINT: http://localhost:9000
+      NODE_ENV: development
       BACKEND_PORT: 4000
+      JWT_SECRET: MySuperSecret
     depends_on:
       - minio
       - minio-init
