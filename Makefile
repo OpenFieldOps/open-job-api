@@ -40,7 +40,7 @@ dummy-data:
 
 stress-data:
 	@pids=""; \
-	for i in {1..100}; do \
+	for i in {1..15}; do \
 		echo "Running stress data with parameter $$i"; \
 		bun run scripts/stress_data.ts $$i & \
 		pids="$$pids $$!"; \
@@ -63,6 +63,7 @@ stress-user:
 
 tests:
 	@./scripts/drop-db.sh
+	sleep 1
 	@$(CLI) push
 	@bun test 
 

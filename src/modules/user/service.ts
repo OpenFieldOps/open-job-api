@@ -1,4 +1,4 @@
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, inArray, not } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import { userAdminTable, userTable } from "../../services/db/schema";
 import { FileStorageService } from "../../services/storage/s3";
@@ -66,21 +66,22 @@ export abstract class UserService {
 
   static async deleteAssignedUser(userId: number, assignedUserId: number) {
     try {
-      const withUser = db.$with("withUser").as(
-        db
-          .select()
-          .from(userTable)
-          .innerJoin(
-            userAdminTable,
-            and(
-              eq(userAdminTable.userId, assignedUserId),
-              eq(userAdminTable.adminId, userId)
+      await db.delete(userTable).where(
+        inArray(
+          userTable.id,
+          db
+            .select({ id: userTable.id })
+            .from(userTable)
+            .innerJoin(
+              userAdminTable,
+              and(
+                eq(userAdminTable.userId, userTable.id),
+                eq(userAdminTable.adminId, userId)
+              )
             )
-          )
-          .limit(1)
+            .where(eq(userTable.id, assignedUserId))
+        )
       );
-
-      await db.with(withUser).delete(userTable);
 
       return;
     } catch {
@@ -89,7 +90,8 @@ export abstract class UserService {
   }
 
   static async fetchAssignedUsers(
-    assignedTo: number
+    assignedTo: number,
+    role?: UserModel.UserRole
   ): Promise<UserModel.UserInfo[]> {
     const users = await db
       .select({
@@ -108,7 +110,8 @@ export abstract class UserService {
           eq(userTable.id, userAdminTable.userId),
           eq(userAdminTable.adminId, assignedTo)
         )
-      );
+      )
+      .where(role ? eq(userTable.role, role) : undefined);
 
     return users.map((el) => FileStorageService.resolveFile(el, "avatar"));
   }

@@ -58,12 +58,15 @@ export const userPlugin = new Elysia({
     }
   )
   .get(
-    "/assigned-users",
-    async ({ user }) => {
-      return UserService.fetchAssignedUsers(user.id);
+    "/get-assigned-users/:role?",
+    async ({ user, params: { role } }) => {
+      return UserService.fetchAssignedUsers(user.id, role);
     },
     {
       role: "admin",
+      params: t.Object({
+        role: t.Optional(t.UnionEnum(["operator", "admin", "client"])),
+      }),
       detail: {
         summary: "Get Assigned Users",
         description: "Get users assigned to the current user",
@@ -71,7 +74,7 @@ export const userPlugin = new Elysia({
     }
   )
   .delete(
-    "/assigned-users/:userId",
+    "/delete-assigned-users/:userId",
     async ({ params: { userId }, user }) => {
       return UserService.deleteAssignedUser(user.id, userId);
     },

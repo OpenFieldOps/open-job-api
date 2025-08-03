@@ -38,7 +38,7 @@ export async function createDummyData() {
     dummyUser
   )) as AuthModel.AuthenticatedUserSuccessResponse;
 
-  await AuthService.registerUser(dummyOperatorUser, "user", res.user.id);
+  await AuthService.registerUser(dummyOperatorUser, "operator", res.user.id);
 
   const operatorAuth = (await AuthService.loginUser({
     email: dummySecondaryOperatorUser.email,

@@ -22,4 +22,10 @@ export abstract class UserNotificationSerice {
       .from(notificationTable)
       .where(eq(notificationTable.userId, userId));
   }
+
+  static async deleteAllNotifications(userId: number) {
+    return await db
+      .delete(notificationTable)
+      .where(eq(notificationTable.userId, userId));
+  }
 }

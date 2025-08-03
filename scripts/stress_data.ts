@@ -3,6 +3,8 @@ import type { AuthModel } from "../src/modules/auth/model";
 import { AuthService } from "../src/modules/auth/service";
 import type { JobModel } from "../src/modules/job/model";
 import { JobService } from "../src/modules/job/service";
+import { UserNotificationModel } from "../src/modules/notification/model";
+import { UserNotificationSerice } from "../src/modules/notification/service";
 import type { UserModel } from "../src/modules/user/model";
 
 export async function createDummyStressData(userCount: number) {
@@ -17,12 +19,12 @@ export async function createDummyStressData(userCount: number) {
   const adminId = adminResponse.user.id;
 
   const startDate = dayjs()
-    .subtract(40, "day")
+    .subtract(20, "day")
     .startOf("day")
     .set("hour", 8)
     .toDate();
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 15; i++) {
     const operatorUser = {
       email: `operator_${userCount}_${i}@gmail.com`,
       username: `operator_${userCount}_${i}`,
@@ -34,10 +36,10 @@ export async function createDummyStressData(userCount: number) {
     try {
       const operator = (await AuthService.registerUser(
         operatorUser,
-        "user",
+        "operator",
         adminId
       )) as UserModel.UserInfo;
-      for (let jobIndex = 0; jobIndex < 70; jobIndex++) {
+      for (let jobIndex = 0; jobIndex < 30; jobIndex++) {
         const job: JobModel.JobCreateBody = {
           title: `Stress Test Job ${jobIndex} for Operator ${userCount}_${jobIndex}`,
           description: `This is a stress test job for operator ${userCount}_${jobIndex}.`,
@@ -52,7 +54,16 @@ export async function createDummyStressData(userCount: number) {
             .toISOString(),
         };
 
-        await JobService.createJob(job, adminId);
+        const jobRes = (await JobService.createJob(job, adminId))
+          .response as JobModel.Job;
+        await UserNotificationSerice.sendNotification(adminId, {
+          title: `New Job Created for Operator ${userCount}_${i}`,
+          message: `A new job has been created for operator ${operatorUser.username}.`,
+          type: UserNotificationModel.UserNotificationType.JobAssigned,
+          payload: {
+            jobId: jobRes.id,
+          },
+        });
       }
     } catch (error) {
       console.error(`Failed to create operator ${i}:`, error);

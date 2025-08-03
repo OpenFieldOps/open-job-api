@@ -13,4 +13,11 @@ export const userNotificationPlugin = new Elysia({
     {
       user: true,
     }
+  )
+  .delete(
+    "/",
+    async ({ user }) => UserNotificationSerice.deleteAllNotifications(user.id),
+    {
+      user: true,
+    }
   );

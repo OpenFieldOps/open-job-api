@@ -11,7 +11,8 @@ import {
 } from "drizzle-orm/pg-core";
 import DbUtils from "./utils";
 
-export const roleEnum = pgEnum("user_role", ["user", "admin"]);
+export const roleEnum = pgEnum("user_role", ["operator", "admin", "client"]);
+
 const { defaultId, defaultDate, defaultVarChar, tableIdRef } = DbUtils;
 
 export const userTable = pgTable("users", {
@@ -22,7 +23,7 @@ export const userTable = pgTable("users", {
   password: defaultVarChar(),
   email: defaultVarChar().unique(),
   avatar: uuid().references(() => fileTable.id),
-  role: roleEnum("role").notNull().default("user"),
+  role: roleEnum("role").notNull().default("operator"),
 });
 
 export const jobStatusEnum = pgEnum("job_status", [
