@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { authMacroPlugin } from "../auth/macro";
 import { UserNotificationSerice } from "./service";
 
@@ -19,5 +19,24 @@ export const userNotificationPlugin = new Elysia({
     async ({ user }) => UserNotificationSerice.deleteAllNotifications(user.id),
     {
       user: true,
+    }
+  )
+  .put(
+    "/read",
+    async ({ user }) =>
+      UserNotificationSerice.markAllNotificationsAsRead(user.id),
+    {
+      user: true,
+    }
+  )
+  .put(
+    "/read/:id",
+    async ({ user, params }) =>
+      UserNotificationSerice.markNotificationAsRead(user.id, params.id),
+    {
+      user: true,
+      params: t.Object({
+        id: t.Number(),
+      }),
     }
   );

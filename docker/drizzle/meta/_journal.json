@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1754130312537,
+      "tag": "0000_broken_kate_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1754131388610,
+      "tag": "0001_exotic_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754150104159,
+      "tag": "0002_neat_the_santerians",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754154196459,
+      "tag": "0003_warm_exodus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754157303968,
+      "tag": "0004_reflective_madelyne_pryor",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1754177792004,
+      "tag": "0005_fuzzy_korvac",
+      "breakpoints": true
+    }
+  ]
+}
