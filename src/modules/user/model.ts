@@ -5,7 +5,7 @@ import { FileMb } from "../../utils/file";
 export namespace UserModel {
   export enum UserRoleEnum {
     admin = "admin",
-    user = "operator",
+    operator = "operator",
     client = "client",
   }
 

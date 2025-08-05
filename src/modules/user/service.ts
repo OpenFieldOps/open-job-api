@@ -41,15 +41,13 @@ export abstract class UserService {
     return FileStorageService.getFileUrl(fileId);
   }
 
+  // Creates a new user and assigns it to an admin (default role is operator)
   static async createAssignedUser(
     newUser: AuthModel.RegisterUserBody,
-    assignedTo: number
+    assignedTo: number,
+    role: UserModel.UserRole = UserModel.UserRoleEnum.operator
   ) {
-    const res = await AuthService.registerUser(
-      newUser,
-      UserModel.UserRoleEnum.user,
-      assignedTo
-    );
+    const res = await AuthService.registerUser(newUser, role, assignedTo);
 
     if (res === AppError.ResultEnum.Conflict) {
       return AppError.Conflict;
