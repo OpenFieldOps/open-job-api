@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   index,
   jsonb,
   pgEnum,
@@ -25,6 +26,22 @@ export const userTable = pgTable("users", {
   avatar: uuid().references(() => fileTable.id),
   role: roleEnum("role").notNull().default("operator"),
 });
+
+export const userLocationTable = pgTable(
+  "user_location",
+  {
+    id: defaultId(),
+    userId: tableIdRef(userTable.id).notNull(),
+    latitude: doublePrecision(),
+    longitude: doublePrecision(),
+    updatedAt: defaultDate()
+      .notNull()
+      .$onUpdate(() => new Date().toISOString()),
+  },
+  (userLocation) => ({
+    userIdIdx: index("user_location_user_id_idx").on(userLocation.userId),
+  })
+);
 
 export const jobStatusEnum = pgEnum("job_status", [
   "scheduled",

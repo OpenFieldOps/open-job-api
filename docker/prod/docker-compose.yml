@@ -74,6 +74,13 @@ services:
       - postgres
     networks:
       - devnet
+  panel:
+    image: suleymanrs/open-job-panel:latest
+    container_name: panel
+    ports:
+      - "8080:80"
+    networks:
+      - devnet
 
 volumes:
   postgres-data:

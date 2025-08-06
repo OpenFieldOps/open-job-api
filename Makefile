@@ -63,7 +63,7 @@ stress-user:
 
 tests:
 	@./scripts/drop-db.sh
-	sleep 1
+	sleep 0.5
 	@$(CLI) push
 	@bun test 
 

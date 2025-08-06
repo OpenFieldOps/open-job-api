@@ -11,21 +11,22 @@ import { userNotificationPlugin } from "./modules/notification";
 
 export const app = new Elysia({
   name: "App",
+  prefix: "/api",
 })
   .use(cors())
-
   .use(
-    swagger({
-      documentation: {
-        info: {
-          description: "API documentation for the service app",
-          title: "Service API",
-          version: "1.0.0",
-        },
-      },
-    })
+    Bun.env.NODE_ENV === "development"
+      ? swagger({
+          documentation: {
+            info: {
+              description: "API documentation for the service app",
+              title: "Service API",
+              version: "1.0.0",
+            },
+          },
+        })
+      : new Elysia()
   )
-
   .use(authPlugin)
   .use(userPlugin)
   .use(userNotificationPlugin)

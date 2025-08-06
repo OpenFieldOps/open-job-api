@@ -51,6 +51,7 @@ services:
       "
     networks:
       - devnet
+
   api:
     build: ../
     container_name: api

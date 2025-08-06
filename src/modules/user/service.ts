@@ -41,7 +41,7 @@ export abstract class UserService {
     return FileStorageService.getFileUrl(fileId);
   }
 
-  // Creates a new user and assigns it to an admin (default role is operator)
+  // (default role is operator)
   static async createAssignedUser(
     newUser: AuthModel.RegisterUserBody,
     assignedTo: number,

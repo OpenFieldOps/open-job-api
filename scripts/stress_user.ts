@@ -13,7 +13,7 @@ function getAdminUser(userCount: number) {
     lastName: "Admin",
   };
 }
-const client = treaty<App>("http://localhost:4000");
+const client = treaty<App>("http://localhost:4000").api;
 
 async function launchUserStressTest(userCount: number): Promise<void> {
   await db.$client.close();
