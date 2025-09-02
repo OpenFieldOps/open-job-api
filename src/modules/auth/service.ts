@@ -1,21 +1,15 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../services/db/db";
-import { userAdminTable, userTable } from "../../services/db/schema";
+import {
+  userAdminTable,
+  userLocationTable,
+  userTable,
+} from "../../services/db/schema";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
 import { UserModel } from "../user/model";
 import { jwtPlugin } from "./macro";
 import type { AuthModel } from "./model";
-
-const UserWithoutPasswordSelect = {
-  id: userTable.id,
-  username: userTable.username,
-  email: userTable.email,
-  firstName: userTable.firstName,
-  lastName: userTable.lastName,
-  avatar: userTable.avatar,
-  role: userTable.role,
-};
 
 async function signUserWithoutPassword(user: UserModel.UserWithoutPassword) {
   const formatedUser = {
@@ -46,12 +40,17 @@ export abstract class AuthService {
         await db
           .insert(userTable)
           .values({ ...body, role })
-          .returning(UserWithoutPasswordSelect)
+          .returning(UserModel.userWithoutPasswordSelect)
       )[0];
 
       await db
         .insert(userAdminTable)
         .values({ adminId: assignedTo ?? user.id, userId: user.id })
+        .execute();
+
+      await db
+        .insert(userLocationTable)
+        .values({ userId: user.id, latitude: 0, longitude: 0 })
         .execute();
 
       return user;
@@ -76,7 +75,10 @@ export abstract class AuthService {
   static async loginUser(loginBody: AuthModel.LoginUserBody) {
     const user = (
       await db
-        .select({ ...UserWithoutPasswordSelect, password: userTable.password })
+        .select({
+          ...UserModel.userWithoutPasswordSelect,
+          password: userTable.password,
+        })
         .from(userTable)
         .where(eq(userTable.email, loginBody.email))
     ).pop();
@@ -95,9 +97,10 @@ export abstract class AuthService {
   static async getAuthenticatedUser(userId: number) {
     const user = (
       await db
-        .select(UserWithoutPasswordSelect)
-        .from(userTable)
+        .update(userTable)
+        .set({ lastSeen: new Date().toISOString() })
         .where(eq(userTable.id, userId))
+        .returning(UserModel.userWithoutPasswordSelect)
     ).pop();
 
     if (!user) return AppError.NotFound;

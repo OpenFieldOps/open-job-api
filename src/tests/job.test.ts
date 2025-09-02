@@ -43,7 +43,7 @@ async function fetchUserJobs(
   ).data as JobModel.Job[];
 }
 
-describe("Jobs Tests", async () => {
+describe("Jobs Tests", () => {
   it("should create an job", async () => {
     const dummy = await createDummyData();
     const job_res = await api.job.post(
@@ -179,5 +179,98 @@ describe("Jobs Tests", async () => {
     expect(fetch_res.status).toBe(200);
     expect(fetch_res.data).toBeArray();
     expect(fetch_res.data).toHaveLength(0);
+  });
+
+  it("should filter jobs by operator ID", async () => {
+    const dummy = await createDummyData();
+    const secondaryDummy = await createSecondaryDummyData();
+
+    // Create a job assigned to the main dummy admin
+    const job1 = await api.job.post(
+      {
+        ...defaultJobData,
+        title: "Job for main operator",
+        startDate: defaultJobDate.start.toISOString(),
+        endDate: defaultJobDate.end.toISOString(),
+        assignedTo: dummy.admin.user.id,
+      },
+      userHeader(dummy.admin.token)
+    );
+
+    // Create a job assigned to the secondary dummy user
+    const job2 = await api.job.post(
+      {
+        ...defaultJobData,
+        title: "Job for secondary operator",
+        startDate: defaultJobDate.start.toISOString(),
+        endDate: defaultJobDate.end.toISOString(),
+        assignedTo: secondaryDummy.operator.user.id,
+      },
+      userHeader(secondaryDummy.admin.token)
+    );
+
+    expect(job1.status).toBe(200);
+    expect(job2.status).toBe(200);
+
+    // Fetch jobs filtered by main operator ID
+    const jobsForMainOperator = await api.job.get({
+      query: {
+        start: defaultJobDate.start.clone().startOf("day").toISOString(),
+        end: defaultJobDate.end.clone().endOf("day").toISOString(),
+        operatorId: dummy.admin.user.id,
+      },
+      ...userHeader(dummy.admin.token),
+    });
+
+    expect(jobsForMainOperator.status).toBe(200);
+    expect(jobsForMainOperator.data).toBeArray();
+    expect(jobsForMainOperator.data).toHaveLength(1);
+    expect(jobsForMainOperator.data?.[0]).toHaveProperty(
+      "assignedTo",
+      dummy.admin.user.id
+    );
+
+    // Fetch jobs filtered by secondary operator ID
+    const jobsForSecondaryOperator = await api.job.get({
+      query: {
+        start: defaultJobDate.start.clone().startOf("day").toISOString(),
+        end: defaultJobDate.end.clone().endOf("day").toISOString(),
+        operatorId: secondaryDummy.operator.user.id,
+      },
+      ...userHeader(dummy.admin.token),
+    });
+
+    expect(jobsForSecondaryOperator.status).toBe(200);
+    expect(jobsForSecondaryOperator.data).toBeArray();
+    expect(jobsForSecondaryOperator.data).toHaveLength(1);
+    expect(jobsForSecondaryOperator.data?.[0]).toHaveProperty(
+      "assignedTo",
+      secondaryDummy.operator.user.id
+    );
+  });
+
+  // Job Report Tests
+  it("should create a job report", async () => {
+    const dummy = await createDummyData();
+    const job = (await createDefaultJob(dummy.admin)).data as JobModel.Job;
+
+    const reportRes = await api.job.report.post(
+      {
+        jobId: job.id,
+        signature: new File(["signature content"], "signature.png", {
+          type: "image/png",
+        }),
+        description: "Job completed successfully",
+      },
+      userHeader(dummy.admin.token)
+    );
+
+    expect(reportRes.status).toBe(200);
+    expect(reportRes.data).toHaveProperty("id");
+    expect(reportRes.data).toHaveProperty("signature");
+    expect(reportRes.data).toHaveProperty(
+      "description",
+      "Job completed successfully"
+    );
   });
 });

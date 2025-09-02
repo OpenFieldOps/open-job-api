@@ -2,10 +2,10 @@ import dayjs from "dayjs";
 import type { AuthModel } from "../src/modules/auth/model";
 import { AuthService } from "../src/modules/auth/service";
 import type { JobModel } from "../src/modules/job/model";
-import { JobService } from "../src/modules/job/service";
 import { UserNotificationModel } from "../src/modules/notification/model";
 import { UserNotificationSerice } from "../src/modules/notification/service";
 import type { UserModel } from "../src/modules/user/model";
+import { JobService } from "../src/modules/job/services/job.service";
 
 export async function createDummyStressData(userCount: number) {
   const adminResponse = (await AuthService.registerUserAdmin({
@@ -24,7 +24,7 @@ export async function createDummyStressData(userCount: number) {
     .set("hour", 8)
     .toDate();
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 45; i++) {
     const operatorUser = {
       email: `operator_${userCount}_${i}@gmail.com`,
       username: `operator_${userCount}_${i}`,

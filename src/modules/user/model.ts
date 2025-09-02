@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import type { userTable } from "../../services/db/schema";
+import { userTable } from "../../services/db/schema";
 import { FileMb } from "../../utils/file";
 
 export namespace UserModel {
@@ -7,18 +7,12 @@ export namespace UserModel {
     admin = "admin",
     operator = "operator",
     client = "client",
+    supervisor = "supervisor",
   }
 
   export type UserRole = `${UserRoleEnum}`;
 
-  export const UserInfo = t.Object({
-    id: t.Number(),
-    username: t.String(),
-    email: t.String(),
-    firstName: t.String(),
-    lastName: t.String(),
-    avatar: t.Union([t.String(), t.Null()]),
-  });
+  export type AssignedUserRole = Exclude<UserRole, "admin">;
 
   export type UserInfo = typeof UserInfo.static;
 
@@ -34,12 +28,32 @@ export namespace UserModel {
     firstName: t.String(),
     lastName: t.String(),
     avatar: t.Union([t.String(), t.Null()]),
-    role: t.UnionEnum(["admin", "operator", "client"] as const),
+    role: t.UnionEnum(["admin", "operator", "client", "supervisor"] as const),
+    lastSeen: t.String(),
   });
+
+  export const userWithoutPasswordSelect = {
+    id: userTable.id,
+    username: userTable.username,
+    email: userTable.email,
+    firstName: userTable.firstName,
+    lastName: userTable.lastName,
+    avatar: userTable.avatar,
+    role: userTable.role,
+    lastSeen: userTable.lastSeen,
+    phone: userTable.phone,
+  };
+
+  export const UserInfo = UserWithoutPassword;
 
   export const UserUpdateBody = t.Object({
     firstName: t.String(),
     lastName: t.String(),
+    phone: t.String(),
+  });
+  export const UpdateUserLocation = t.Object({
+    latitude: t.Number(),
+    longitude: t.Number(),
   });
   export type UserUpdateBody = typeof UserUpdateBody.$infer;
   export const UserUpdateAvatarBody = t.Object({

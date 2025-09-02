@@ -7,7 +7,6 @@ DB_USER=devuser
 
 export PGPASSWORD="devpass"
 
-echo "🔄 Dropping all objects in database '$DB_NAME'..."
 
 psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -q -Atc "
 DO \$\$
@@ -37,4 +36,3 @@ END
 \$\$;
 " > /dev/null 2>&1
 
-echo "✅ '$DB_NAME' clean."

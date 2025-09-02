@@ -1,6 +1,10 @@
-import { and, eq, inArray, not } from "drizzle-orm";
+import { and, eq, exists, not } from "drizzle-orm";
 import { db } from "../../services/db/db";
-import { userAdminTable, userTable } from "../../services/db/schema";
+import {
+  userAdminTable,
+  userLocationTable,
+  userTable,
+} from "../../services/db/schema";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
 import type { AuthModel } from "../auth/model";
@@ -14,6 +18,7 @@ export abstract class UserService {
       .set({
         firstName: body.firstName,
         lastName: body.lastName,
+        phone: body.phone,
       })
       .where(eq(userTable.id, userId));
   }
@@ -45,7 +50,7 @@ export abstract class UserService {
   static async createAssignedUser(
     newUser: AuthModel.RegisterUserBody,
     assignedTo: number,
-    role: UserModel.UserRole = UserModel.UserRoleEnum.operator
+    role: UserModel.UserRole
   ) {
     const res = await AuthService.registerUser(newUser, role, assignedTo);
 
@@ -59,31 +64,35 @@ export abstract class UserService {
       email: res.email,
       firstName: res.firstName,
       lastName: res.lastName,
+      lastSeen: res.lastSeen,
+      avatar: res.avatar,
+      role: res.role,
+      phone: res.phone,
     } as UserModel.UserInfo;
   }
 
   static async deleteAssignedUser(userId: number, assignedUserId: number) {
-    try {
-      await db.delete(userTable).where(
-        inArray(
-          userTable.id,
-          db
-            .select({ id: userTable.id })
-            .from(userTable)
-            .innerJoin(
-              userAdminTable,
-              and(
-                eq(userAdminTable.userId, userTable.id),
-                eq(userAdminTable.adminId, userId)
-              )
-            )
-            .where(eq(userTable.id, assignedUserId))
+    const isAssignedUser = await db
+      .select({ id: userAdminTable.userId })
+      .from(userAdminTable)
+      .where(
+        and(
+          eq(userAdminTable.adminId, userId),
+          eq(userAdminTable.userId, assignedUserId)
         )
-      );
+      )
+      .then((res) => res.length > 0);
+
+    if (!isAssignedUser) {
+      return AppError.Unauthorized;
+    }
+
+    try {
+      await db.delete(userTable).where(eq(userTable.id, assignedUserId));
 
       return;
     } catch {
-      return AppError.Unauthorized;
+      return AppError.InternalServerError;
     }
   }
 
@@ -92,14 +101,7 @@ export abstract class UserService {
     role?: UserModel.UserRole
   ): Promise<UserModel.UserInfo[]> {
     const users = await db
-      .select({
-        id: userTable.id,
-        username: userTable.username,
-        email: userTable.email,
-        firstName: userTable.firstName,
-        lastName: userTable.lastName,
-        avatar: userTable.avatar,
-      })
+      .select(UserModel.userWithoutPasswordSelect)
       .from(userTable)
       .innerJoin(
         userAdminTable,
@@ -112,5 +114,59 @@ export abstract class UserService {
       .where(role ? eq(userTable.role, role) : undefined);
 
     return users.map((el) => FileStorageService.resolveFile(el, "avatar"));
+  }
+
+  static async fetchAssignedUserLocation(
+    userId: number,
+    assignedUserId: number
+  ) {
+    const sub = db
+      .select({ id: userAdminTable.userId })
+      .from(userAdminTable)
+      .where(
+        and(
+          eq(userAdminTable.userId, userLocationTable.userId),
+          eq(userAdminTable.adminId, userId)
+        )
+      );
+
+    const userLocation = (
+      await db
+        .select({
+          latitude: userLocationTable.latitude,
+          longitude: userLocationTable.longitude,
+          updatedAt: userLocationTable.updatedAt,
+        })
+        .from(userLocationTable)
+        .where(and(eq(userLocationTable.userId, assignedUserId), exists(sub)))
+        .limit(1)
+    ).pop();
+
+    if (!userLocation) {
+      return AppError.NotFound;
+    }
+
+    return {
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      updatedAt: userLocation.updatedAt,
+    };
+  }
+
+  static async updateUserLocation(
+    userId: number,
+    latitude: number,
+    longitude: number
+  ) {
+    const updatedAt = new Date().toISOString();
+
+    await db
+      .update(userLocationTable)
+      .set({
+        latitude,
+        longitude,
+        updatedAt,
+      })
+      .where(eq(userLocationTable.userId, userId));
   }
 }

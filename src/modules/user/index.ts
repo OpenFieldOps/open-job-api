@@ -21,9 +21,6 @@ export const userPlugin = new Elysia({
   .patch("/", ({ body, user }) => UserService.updateUserInfo(body, user.id), {
     body: UserModel.UserUpdateBody,
     user: true,
-    response: {
-      200: t.Void(),
-    },
     detail: {
       summary: "Update User Information",
       description: "Update user information",
@@ -36,21 +33,22 @@ export const userPlugin = new Elysia({
     {
       body: UserModel.UserUpdateAvatarBody,
       user: true,
-      response: {
-        200: t.String(),
-      },
       detail: generateDoc("Update User Avatar"),
     }
   )
   .post(
     "/create-user",
     async ({ body, user }) => {
-      return UserService.createAssignedUser(body, user.id);
+      return UserService.createAssignedUser(body, user.id, body.role);
     },
     {
-      body: AuthModel.RegisterUserBody,
+      body: t.Intersect([
+        AuthModel.RegisterUserBody,
+        t.Object({
+          role: t.UnionEnum(["operator", "client", "supervisor"] as const),
+        }),
+      ]),
       role: "admin",
-
       detail: {
         summary: "Create Assigned User",
         description: "Create a new user assigned to the current user",
@@ -65,7 +63,9 @@ export const userPlugin = new Elysia({
     {
       role: "admin",
       params: t.Object({
-        role: t.Optional(t.UnionEnum(["operator", "admin", "client"])),
+        role: t.Optional(
+          t.UnionEnum(["operator", "admin", "client", "supervisor"] as const)
+        ),
       }),
       detail: {
         summary: "Get Assigned Users",
@@ -96,12 +96,27 @@ export const userPlugin = new Elysia({
     },
     {
       user: true,
-      response: {
-        200: t.String(),
-      },
       detail: {
         summary: "Get User Avatar",
         description: "Get user avatar URL",
+      },
+    }
+  )
+  .put(
+    "/location",
+    async ({ body, user }) => {
+      return UserService.updateUserLocation(
+        user.id,
+        body.latitude,
+        body.longitude
+      );
+    },
+    {
+      body: UserModel.UpdateUserLocation,
+      user: true,
+      detail: {
+        summary: "Update User Location",
+        description: "Update the current user's location",
       },
     }
   );

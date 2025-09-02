@@ -5,7 +5,7 @@ import { config } from "../../config";
 import * as schema from "./schema";
 
 const client = new SQL(config.database.url, {
-  max: 1,
+  max: Bun.env.NODE_ENV === "test" ? 1 : 5,
 });
 
 export const db = drizzle({
@@ -13,13 +13,15 @@ export const db = drizzle({
   schema: schema,
 });
 
-db.$client
+await db.$client
   .connect()
   .then(() => {
-    console.log(
-      "Connected to the database successfully at",
-      config.database.url
-    );
+    if (Bun.env.NODE_ENV !== "test") {
+      console.log(
+        "Connected to the database successfully at",
+        config.database.url
+      );
+    }
   })
   .catch((error) => {
     console.error("Failed to connect to the database:", error);

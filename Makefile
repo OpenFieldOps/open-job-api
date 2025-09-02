@@ -61,11 +61,15 @@ stress-user:
 	wait; \
 	echo "All stress tests completed."
 
+TEST_FILES := $(shell find ./src/tests -name "*.test.ts")
+
+
 tests:
 	@./scripts/drop-db.sh
-	sleep 0.5
-	@$(CLI) push
-	@bun test 
+	@$(CLI) push 1> /dev/null
+	@for file in $(TEST_FILES); do \
+		bun test $$file || exit 1; \
+	done
 
 pre-commit:
 	@echo "Starting pre-commit checks..."
@@ -90,7 +94,7 @@ docker-push:
 
 build:
 	mkdir -p ./out
-	bun build --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/main.ts
+	bun build --minify --compile --minify-whitespace --minify-syntax --target $(TARGET) --outfile ./out/$(OUT) ./src/main.ts
 
 	chmod +x ./out/$(OUT)
 

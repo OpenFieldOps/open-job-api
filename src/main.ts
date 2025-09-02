@@ -27,24 +27,32 @@ export const app = new Elysia({
         })
       : new Elysia()
   )
+  .onError((error) => {
+    if (error.error instanceof Error) {
+      console.error("Error:", error.error);
+    }
+  })
   .use(authPlugin)
   .use(userPlugin)
   .use(userNotificationPlugin)
   .use(jobPlugin)
   .use(filePlugin);
 
-app.listen(
-  {
-    port: config.server.backend_port,
-    hostname: "0.0.0.0",
-  },
-  () => {
-    if (Bun.env.NODE_ENV !== "test") {
-      console.log(
-        `Server is running on http://localhost:${config.server.backend_port}`
-      );
+await new Promise<void>((resolve) => {
+  app.listen(
+    {
+      port: config.server.backend_port,
+      hostname: "0.0.0.0",
+    },
+    () => {
+      if (Bun.env.NODE_ENV !== "test") {
+        console.log(
+          `Server is running on http://localhost:${config.server.backend_port}`
+        );
+      }
+      resolve();
     }
-  }
-);
+  );
+});
 
 export type App = typeof app;

@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17.5
+    image: postgres:latest
     container_name: postgres
     restart: unless-stopped
     environment:

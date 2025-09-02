@@ -1,6 +1,5 @@
-import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import { status, t } from "elysia";
-import { jobTable, type jobTaskTable } from "../../services/db/schema";
+import type { jobReportTable, jobTaskTable } from "../../services/db/schema";
 
 export namespace JobModel {
   export type Job = typeof Job.static;
@@ -11,8 +10,17 @@ export namespace JobModel {
   export type JobTaskCreateBody = typeof JobTaskCreateBody.static;
   export type JobTaskUpdateBody = typeof JobTaskUpdateBody.static;
   export type JobTask = typeof jobTaskTable.$inferSelect;
+  export type JobReport = typeof jobReportTable.$inferSelect;
+  export type JobReportCreateBody = typeof JobReportCreateBody.static;
+  export type JobReportUpdateBody = typeof JobReportUpdateBody.static;
 
   export const JobStatusString = t.String();
+  export const JobStatusEnum = t.UnionEnum(
+    ["scheduled", "pending", "inProgress", "completed"],
+    {
+      description: "Job status filter",
+    }
+  );
 
   export type JobStatusString =
     | "scheduled"
@@ -20,7 +28,18 @@ export namespace JobModel {
     | "inProgress"
     | "completed";
 
-  export const Job = createSelectSchema(jobTable);
+  export const Job = t.Object({
+    id: t.Integer(),
+    title: t.String(),
+    description: t.Optional(t.String()),
+    assignedTo: t.Integer(),
+    startDate: t.Optional(t.String()),
+    endDate: t.Optional(t.String()),
+    location: t.Optional(t.String()),
+    status: JobStatusEnum,
+    createdAt: t.String(),
+    updatedAt: t.String(),
+  });
 
   export const JobSelectQuery = t.Partial(
     t.Object({
@@ -32,23 +51,35 @@ export namespace JobModel {
           default: "none",
         }
       ),
+      notStatus: t.Optional(
+        t.UnionEnum(
+          ["scheduled", "pending", "inProgress", "completed", "none"],
+          {
+            description: "Exclude jobs with this status",
+            default: "none",
+          }
+        )
+      ),
+      operatorId: t.Integer({
+        description: "Filter jobs by operator/assignee ID",
+      }),
     })
   );
 
-  const _JobCreateBody = createInsertSchema(jobTable);
-
-  export const JobCreateBody = t.Intersect([
-    t.Omit(_JobCreateBody, ["id", "createdBy", "createdAt", "updatedAt"]),
-    t.Object({
-      title: t.String({
-        minLength: 3,
-        error: {
-          constructor: () =>
-            status(422, "Title must be at least 3 characters long"),
-        },
-      }),
+  export const JobCreateBody = t.Object({
+    title: t.String({
+      minLength: 3,
+      error: () => status(422, "Title must be at least 3 characters long"),
     }),
-  ]);
+    description: t.Optional(t.String()),
+    assignedTo: t.Integer(),
+    startDate: t.Optional(t.String()),
+    endDate: t.Optional(t.String()),
+    location: t.Optional(t.String()),
+    status: t.Optional(
+      t.UnionEnum(["scheduled", "pending", "inProgress", "completed"])
+    ),
+  });
 
   export const JobUpdateBody = t.Object({
     id: t.Integer(),
@@ -77,4 +108,35 @@ export namespace JobModel {
   });
 
   export const JobList = t.Array(Job);
+
+  export const JobReport = t.Object({
+    id: t.Integer(),
+    description: t.String(),
+    jobId: t.Integer(),
+    signature: t.String(),
+    completedAt: t.String(),
+  });
+
+  export const JobReportCreateBody = t.Object({
+    jobId: t.Integer(),
+    signature: t.File({
+      description: "Signature file for the job report",
+    }),
+    description: t.Optional(t.String()),
+    files: t.Optional(
+      t.Array(t.File(), {
+        description: "Additional files to attach to the report",
+      })
+    ),
+  });
+
+  export const JobReportUpdateBody = t.Object({
+    id: t.Integer(),
+    description: t.Optional(t.String()),
+    files: t.Optional(
+      t.Array(t.File(), {
+        description: "Additional files to attach to the report",
+      })
+    ),
+  });
 }

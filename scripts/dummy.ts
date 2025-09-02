@@ -41,8 +41,8 @@ export async function createDummyData() {
   await AuthService.registerUser(dummyOperatorUser, "operator", res.user.id);
 
   const operatorAuth = (await AuthService.loginUser({
-    email: dummySecondaryOperatorUser.email,
-    password: dummySecondaryOperatorUser.password,
+    email: dummyOperatorUser.email,
+    password: dummyOperatorUser.password,
   })) as AuthModel.AuthenticatedUserSuccessResponse;
 
   return {
@@ -56,10 +56,17 @@ export async function createSecondaryDummyData() {
     dummySecondaryUser
   )) as AuthModel.AuthenticatedUserSuccessResponse;
 
+  await AuthService.registerUser(
+    dummySecondaryOperatorUser,
+    "operator",
+    res.user.id
+  );
+
   const operatorAuth = (await AuthService.loginUser({
     email: dummySecondaryOperatorUser.email,
     password: dummySecondaryOperatorUser.password,
   })) as AuthModel.AuthenticatedUserSuccessResponse;
+
   return {
     admin: res,
     operator: operatorAuth,
