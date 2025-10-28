@@ -132,7 +132,7 @@ describe("User Tests", () => {
 
     const deleteRes = await api.user["delete-assigned-users"]({
       userId: createdUser.id,
-    }).delete(null, userHeader(dummy.admin.token));
+    }).delete(undefined, userHeader(dummy.admin.token));
 
     expect(deleteRes.status).toBe(200);
 
@@ -170,7 +170,7 @@ describe("User Tests", () => {
 
     const deleteRes = await api.user["delete-assigned-users"]({
       userId: createdUser.id,
-    }).delete(null, userHeader(dummy.operator.token));
+    }).delete(undefined, userHeader(dummy.operator.token));
 
     expect(deleteRes.status).toBe(401);
   });
@@ -189,7 +189,7 @@ describe("User Tests", () => {
 
     const deleteRes = await api.user["delete-assigned-users"]({
       userId: createdUser.id,
-    }).delete(null, userHeader(secondaryDummy.admin.token));
+    }).delete(undefined, userHeader(secondaryDummy.admin.token));
 
     expect(deleteRes.status).toBe(401);
   });

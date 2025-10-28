@@ -68,6 +68,7 @@ export abstract class UserService {
       avatar: res.avatar,
       role: res.role,
       phone: res.phone,
+      pricingModel: null,
     } as UserModel.UserInfo;
   }
 

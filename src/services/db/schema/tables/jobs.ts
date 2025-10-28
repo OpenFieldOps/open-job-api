@@ -1,0 +1,82 @@
+import {
+  boolean,
+  index,
+  pgTable,
+  serial,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
+import DbUtils from "../../utils";
+import { jobStatusEnum } from "../enums";
+import { fileTable } from "./files";
+import { userTable } from "./users";
+
+const { defaultId, defaultDate, defaultVarChar, tableIdRef } = DbUtils;
+
+export const jobTable = pgTable(
+  "job",
+  {
+    id: defaultId(),
+    title: defaultVarChar(),
+    description: text().notNull().default(""),
+    assignedTo: tableIdRef(userTable.id),
+    createdBy: tableIdRef(userTable.id),
+    createdAt: defaultDate(),
+    updatedAt: defaultDate(),
+    startDate: defaultDate().notNull(),
+    endDate: defaultDate().notNull(),
+    location: text().notNull().default(""),
+    status: jobStatusEnum("status").notNull().default("scheduled"),
+  },
+  (job) => [
+    index("job_assigned_to_idx").on(job.assignedTo),
+    index("job_created_by_idx").on(job.createdBy),
+    index("job_start_date_idx").on(job.startDate),
+    index("job_end_date_idx").on(job.endDate),
+    index("job_date_range_idx").on(job.startDate, job.endDate),
+  ]
+);
+
+export const jobReportTable = pgTable(
+  "jobReport",
+  {
+    id: defaultId(),
+    jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
+    signature: uuid().references(() => fileTable.id, {
+      onDelete: "cascade",
+    }),
+    description: text().notNull().default(""),
+    completedAt: defaultDate().notNull(),
+  },
+  (report) => [
+    index("job_report_job_id_idx").on(report.jobId),
+    index("job_report_id_idx").on(report.id),
+  ]
+);
+
+export const jobReportFileTable = pgTable("jobReportFile", {
+  fileId: uuid()
+    .primaryKey()
+    .references(() => fileTable.id, { onDelete: "cascade" }),
+  jobReportId: serial().references(() => jobReportTable.id, {
+    onDelete: "cascade",
+  }),
+});
+
+export const jobTaskTable = pgTable(
+  "jobTask",
+  {
+    id: defaultId(),
+    completed: boolean().default(false).notNull(),
+    title: defaultVarChar(),
+    jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
+  },
+  (task) => [index("job_task_job_id_idx").on(task.jobId)]
+);
+
+export const jobFiles = pgTable("job_file", {
+  fileId: uuid()
+    .primaryKey()
+    .references(() => fileTable.id, { onDelete: "cascade" }),
+  jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
+});

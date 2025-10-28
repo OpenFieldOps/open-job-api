@@ -30,6 +30,7 @@ export namespace UserModel {
     avatar: t.Union([t.String(), t.Null()]),
     role: t.UnionEnum(["admin", "operator", "client", "supervisor"] as const),
     lastSeen: t.String(),
+    pricingModel: t.Optional(t.Nullable(t.Number())),
   });
 
   export const userWithoutPasswordSelect = {
@@ -42,6 +43,7 @@ export namespace UserModel {
     role: userTable.role,
     lastSeen: userTable.lastSeen,
     phone: userTable.phone,
+    pricingModel: userTable.pricingModel,
   };
 
   export const UserInfo = UserWithoutPassword;

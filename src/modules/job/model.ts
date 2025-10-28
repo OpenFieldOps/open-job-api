@@ -68,7 +68,7 @@ export namespace JobModel {
 
   export const JobCreateBody = t.Object({
     title: t.String({
-      minLength: 3,
+      minLength: 1,
       error: () => status(422, "Title must be at least 3 characters long"),
     }),
     description: t.Optional(t.String()),
@@ -83,7 +83,7 @@ export namespace JobModel {
 
   export const JobUpdateBody = t.Object({
     id: t.Integer(),
-    title: t.Optional(t.String({ minLength: 3 })),
+    title: t.Optional(t.String({ minLength: 1 })),
     description: t.Optional(t.String()),
     assignedTo: t.Optional(t.Integer()),
     startDate: t.Optional(t.String()),
@@ -95,7 +95,7 @@ export namespace JobModel {
   });
 
   export const JobTaskCreateBody = t.Object({
-    title: t.String({ minLength: 3 }),
+    title: t.String({ minLength: 1 }),
 
     completed: t.Optional(t.Boolean()),
     jobId: t.Integer(),
@@ -103,7 +103,7 @@ export namespace JobModel {
 
   export const JobTaskUpdateBody = t.Object({
     id: t.Integer(),
-    title: t.Optional(t.String({ minLength: 3 })),
+    title: t.Optional(t.String({ minLength: 1 })),
     completed: t.Optional(t.Boolean()),
   });
 

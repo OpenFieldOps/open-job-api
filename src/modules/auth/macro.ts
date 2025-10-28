@@ -25,7 +25,7 @@ export const authMacroPlugin = new Elysia({
   name: "authMacro",
   tags: ["auth"],
 }).macro({
-  user: () => ({
+  user: {
     resolve: async ({ headers }) => {
       const payload = await userFromAuthorizationHeader(headers.authorization);
 
@@ -37,7 +37,7 @@ export const authMacroPlugin = new Elysia({
         user: payload as UserModel.UserWithoutPassword,
       };
     },
-  }),
+  },
 });
 
 export const roleMacroPlugin = new Elysia({

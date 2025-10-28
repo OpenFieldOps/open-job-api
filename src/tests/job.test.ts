@@ -102,7 +102,7 @@ describe("Jobs Tests", () => {
       .job({
         id: job.id,
       })
-      .delete(null, userHeader(dummy.admin.token));
+      .delete(undefined, userHeader(dummy.admin.token));
 
     expect(res.status).toBe(200);
     const fetched_job = await fetchUserJobs(dummy.admin);
@@ -117,7 +117,7 @@ describe("Jobs Tests", () => {
       .job({
         id: job.id,
       })
-      .delete(null, userHeader(secondaryDummy.admin.token));
+      .delete(undefined, userHeader(secondaryDummy.admin.token));
     expect(res.status).toBe(404);
   });
 
@@ -185,7 +185,6 @@ describe("Jobs Tests", () => {
     const dummy = await createDummyData();
     const secondaryDummy = await createSecondaryDummyData();
 
-    // Create a job assigned to the main dummy admin
     const job1 = await api.job.post(
       {
         ...defaultJobData,
@@ -197,7 +196,6 @@ describe("Jobs Tests", () => {
       userHeader(dummy.admin.token)
     );
 
-    // Create a job assigned to the secondary dummy user
     const job2 = await api.job.post(
       {
         ...defaultJobData,
@@ -212,7 +210,6 @@ describe("Jobs Tests", () => {
     expect(job1.status).toBe(200);
     expect(job2.status).toBe(200);
 
-    // Fetch jobs filtered by main operator ID
     const jobsForMainOperator = await api.job.get({
       query: {
         start: defaultJobDate.start.clone().startOf("day").toISOString(),
@@ -230,7 +227,6 @@ describe("Jobs Tests", () => {
       dummy.admin.user.id
     );
 
-    // Fetch jobs filtered by secondary operator ID
     const jobsForSecondaryOperator = await api.job.get({
       query: {
         start: defaultJobDate.start.clone().startOf("day").toISOString(),
@@ -249,7 +245,6 @@ describe("Jobs Tests", () => {
     );
   });
 
-  // Job Report Tests
   it("should create a job report", async () => {
     const dummy = await createDummyData();
     const job = (await createDefaultJob(dummy.admin)).data as JobModel.Job;

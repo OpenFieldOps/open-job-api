@@ -8,6 +8,7 @@ import { cors } from "@elysiajs/cors";
 import { authPlugin } from "./modules/auth";
 import { filePlugin } from "./modules/files";
 import { userNotificationPlugin } from "./modules/notification";
+import { pricingModelPlugin } from "./modules/pricing-model";
 
 export const app = new Elysia({
   name: "App",
@@ -36,7 +37,8 @@ export const app = new Elysia({
   .use(userPlugin)
   .use(userNotificationPlugin)
   .use(jobPlugin)
-  .use(filePlugin);
+  .use(filePlugin)
+  .use(pricingModelPlugin);
 
 await new Promise<void>((resolve) => {
   app.listen(
