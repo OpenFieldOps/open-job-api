@@ -27,7 +27,10 @@ export const config: Config = {
   },
   database: {
     url:
-      Bun.env.DATABASE_URL || "postgres://devuser:devpass@localhost:5432/devdb",
+      Bun.env.NODE_ENV === "test"
+        ? "postgres://testuser:testpass@localhost:55432/testdb"
+        : Bun.env.DATABASE_URL ||
+          "postgres://devuser:devpass@localhost:5432/devdb",
   },
   storage: {
     s3_access_key_id: Bun.env.S3_ACCESS_KEY_ID || "your_access_key_id",

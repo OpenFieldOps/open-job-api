@@ -65,8 +65,7 @@ TEST_FILES := $(shell find ./src/tests -name "*.test.ts")
 
 
 tests:
-	@./scripts/drop-db.sh
-	@$(CLI) push 1> /dev/null
+	@$(CLI) push --config drizzle.config.test.ts
 	bun test
 
 pre-commit:

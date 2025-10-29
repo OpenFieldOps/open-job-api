@@ -18,6 +18,26 @@ services:
       retries: 5
     networks:
       - devnet
+
+  postgres_test:
+    image: postgres:latest
+    container_name: postgres_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    ports:
+      - "55432:5432" # port distinct pour ne pas entrer en conflit
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devnet
   minio:
     image: minio/minio:latest
     container_name: dev-minio
@@ -78,6 +98,7 @@ services:
 
 volumes:
   postgres-data:
+  postgres-test-data:
   minio-data:
 
 networks:
