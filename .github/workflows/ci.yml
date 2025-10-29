@@ -14,19 +14,19 @@ jobs:
       postgres:
         image: postgres:17.5
         ports:
-          - 5432:5432
+          - 55432:5432
         env:
-          POSTGRES_USER: devuser
-          POSTGRES_PASSWORD: devpass
-          POSTGRES_DB: devdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
         options: >-
-          --health-cmd="pg_isready -U devuser"
+          --health-cmd="pg_isready -U testuser"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
     env:
-      DATABASE_URL: postgres://devuser:devpass@localhost:5432/devdb
+      DATABASE_URL: postgres://testuser:testpass@localhost:55432/testdb
       S3_ENDPOINT: http://localhost:9000
       S3_ACCESS_KEY_ID: minioadmin
       S3_SECRET_ACCESS_KEY: minioadminpass
