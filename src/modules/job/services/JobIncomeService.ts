@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte, or } from "drizzle-orm";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "../../../services/db/db";
 import { jobTable } from "../../../services/db/schema";
 import {
@@ -96,7 +96,7 @@ export abstract class JobIncomeService {
       )
       .where(
         and(
-          or(eq(jobTable.assignedTo, userId), eq(jobTable.createdBy, userId)),
+          eq(jobTable.createdBy, userId),
           lte(jobTable.startDate, queryEndDate),
           gte(jobTable.endDate, queryStartDate)
         )

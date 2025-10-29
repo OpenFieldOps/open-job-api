@@ -27,6 +27,7 @@ export namespace UserModel {
     email: t.String(),
     firstName: t.String(),
     lastName: t.String(),
+    phone: t.String(),
     avatar: t.Union([t.String(), t.Null()]),
     role: t.UnionEnum(["admin", "operator", "client", "supervisor"] as const),
     lastSeen: t.String(),

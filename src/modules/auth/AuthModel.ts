@@ -20,6 +20,7 @@ export namespace AuthModel {
 		password: t.String({
 			minLength: 6,
 		}),
+		phone: t.Optional(t.String()),
 	});
 	export type RegisterUserBody = typeof RegisterUserBody.static;
 
