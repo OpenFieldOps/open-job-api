@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import dayjs from "dayjs";
 import { createDummyData, createSecondaryDummyData } from "../../scripts/dummy";
-import type { AuthModel } from "../modules/auth/model";
-import type { JobModel } from "../modules/job/model";
+import type { AuthModel } from "../modules/auth/AuthModel";
+import type { JobModel } from "../modules/job/JobModel";
 import { api } from "./setup";
 import { userHeader } from "./utils";
 
@@ -24,6 +24,7 @@ async function createDefaultJob(
       startDate: defaultJobDate.start.toISOString(),
       endDate: defaultJobDate.end.toISOString(),
       assignedTo: admin.user.id,
+      assignedClient: admin.user.id,
     },
     userHeader(admin.token)
   );
@@ -50,6 +51,7 @@ describe("Jobs Tests", () => {
       {
         ...defaultJobData,
         assignedTo: dummy.admin.user.id,
+        assignedClient: dummy.admin.user.id,
       },
       userHeader(dummy.admin.token)
     );
@@ -192,6 +194,7 @@ describe("Jobs Tests", () => {
         startDate: defaultJobDate.start.toISOString(),
         endDate: defaultJobDate.end.toISOString(),
         assignedTo: dummy.admin.user.id,
+        assignedClient: dummy.admin.user.id,
       },
       userHeader(dummy.admin.token)
     );
@@ -203,6 +206,7 @@ describe("Jobs Tests", () => {
         startDate: defaultJobDate.start.toISOString(),
         endDate: defaultJobDate.end.toISOString(),
         assignedTo: secondaryDummy.operator.user.id,
+        assignedClient: secondaryDummy.operator.user.id,
       },
       userHeader(secondaryDummy.admin.token)
     );

@@ -1,14 +1,14 @@
 import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
 import { config } from "./config";
-import { jobPlugin } from "./modules/job/index";
-import { userPlugin } from "./modules/user";
+import { jobPlugin } from "./modules/job/JobPlugin";
+import { userPlugin } from "./modules/user/UserPlugin";
 import "./services/db/db";
 import { cors } from "@elysiajs/cors";
-import { authPlugin } from "./modules/auth";
-import { filePlugin } from "./modules/files";
-import { userNotificationPlugin } from "./modules/notification";
-import { pricingModelPlugin } from "./modules/pricing-model";
+import { authPlugin } from "./modules/auth/AuthPlugin";
+import { filePlugin } from "./modules/files/FilesPlugin";
+import { userNotificationPlugin } from "./modules/notification/NotificationPlugin";
+import { pricingModelPlugin } from "./modules/pricing-model/PricingModelPlugin";
 
 export const app = new Elysia({
   name: "App",

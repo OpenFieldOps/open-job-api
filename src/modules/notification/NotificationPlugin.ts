@@ -1,6 +1,6 @@
 import Elysia, { t } from "elysia";
 import { authMacroPlugin } from "../auth/macro";
-import { UserNotificationSerice } from "./service";
+import { UserNotificationSerice } from "./NotificationService";
 
 export const userNotificationPlugin = new Elysia({
   name: "notification",

@@ -1,4 +1,5 @@
 import { and, eq, or } from "drizzle-orm";
+import { status } from "elysia";
 import { db } from "../../../services/db/db";
 import {
   fileTable,
@@ -8,9 +9,8 @@ import {
 } from "../../../services/db/schema";
 import { FileStorageService } from "../../../services/storage/s3";
 import { AppError } from "../../../utils/error";
-import type { JobModel } from "../model";
-import { userJobAccessCondition } from "./access";
-import { status } from "elysia";
+import type { JobModel } from "../JobModel";
+import { userJobAccessCondition } from "./JobAccess";
 
 export abstract class JobReportService {
   static async createJobReport(
@@ -40,13 +40,16 @@ export abstract class JobReportService {
     )[0];
 
     if (body.files?.length) {
-      for (const file of body.files) {
-        const fileId = await FileStorageService.uploadFile(file);
-        await db.insert(jobReportFileTable).values({
-          fileId,
-          jobReportId: report.id,
-        });
-      }
+      await Promise.all(
+        body.files.map((file) =>
+          FileStorageService.uploadFile(file).then((fileId) =>
+            db.insert(jobReportFileTable).values({
+              fileId,
+              jobReportId: report.id,
+            })
+          )
+        )
+      );
     }
 
     return status(200, report);
@@ -116,13 +119,16 @@ export abstract class JobReportService {
       .returning();
 
     if (body.files?.length) {
-      for (const file of body.files) {
-        const fileId = await FileStorageService.uploadFile(file);
-        await db.insert(jobReportFileTable).values({
-          fileId,
-          jobReportId: reportId,
-        });
-      }
+      await Promise.all(
+        body.files.map((file) =>
+          FileStorageService.uploadFile(file).then((fileId) =>
+            db.insert(jobReportFileTable).values({
+              fileId,
+              jobReportId: reportId,
+            })
+          )
+        )
+      );
     }
 
     return status(200, updatedReport[0]);
@@ -148,9 +154,9 @@ export abstract class JobReportService {
       .from(jobReportFileTable)
       .where(eq(jobReportFileTable.jobReportId, reportId));
 
-    for (const file of reportFiles) {
-      await FileStorageService.deleteFile(file.fileId);
-    }
+    await Promise.all(
+      reportFiles.map((file) => FileStorageService.deleteFile(file.fileId))
+    );
 
     if (report[0].jobReport?.signature) {
       await FileStorageService.deleteFile(report[0].jobReport.signature);

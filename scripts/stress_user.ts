@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/performance/noAwaitInLoops: testing script */
 import { treaty } from "@elysiajs/eden";
 import { sleep } from "bun";
 import dayjs from "dayjs";

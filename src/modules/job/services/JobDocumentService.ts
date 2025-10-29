@@ -4,7 +4,7 @@ import { fileTable, jobFiles, jobTable } from "../../../services/db/schema";
 import { FileStorageService } from "../../../services/storage/s3";
 import { AppError } from "../../../utils/error";
 import type { FileModel } from "../../models/FileModel";
-import { userJobAccessCondition } from "./access";
+import { userJobAccessCondition } from "./JobAccess";
 
 export abstract class JobDocumentService {
   static async fetchJobDocuments(

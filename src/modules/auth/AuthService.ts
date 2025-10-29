@@ -7,9 +7,9 @@ import {
 } from "../../services/db/schema";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
-import { UserModel } from "../user/model";
+import { UserModel } from "../user/UserModel";
 import { jwtPlugin } from "./macro";
-import type { AuthModel } from "./model";
+import type { AuthModel } from "./AuthModel";
 
 async function signUserWithoutPassword(user: UserModel.UserWithoutPassword) {
   const formatedUser = {

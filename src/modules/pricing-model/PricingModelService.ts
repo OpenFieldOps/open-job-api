@@ -1,12 +1,12 @@
+import { and, eq } from "drizzle-orm";
+import { db } from "../../services/db/db";
 import {
   pricingModelTable,
   pricingRangeTable,
 } from "../../services/db/schema/tables/pricing";
 import { userTable } from "../../services/db/schema/tables/users";
-import { db } from "../../services/db/db";
-import type { PricingModel } from "./model";
-import { eq, and } from "drizzle-orm";
 import { AppError } from "../../utils/error";
+import type { PricingModel } from "./PricingModelModel";
 
 export abstract class PricingModelService {
   static async createPricingModel(

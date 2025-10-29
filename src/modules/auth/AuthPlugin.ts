@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import { authMacroPlugin } from "./macro";
-import { AuthModel } from "./model";
-import { AuthService } from "./service";
+import { AuthModel } from "./AuthModel";
+import { AuthService } from "./AuthService";
 
 export const authPlugin = new Elysia({
   prefix: "/auth",

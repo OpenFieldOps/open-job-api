@@ -2,9 +2,9 @@ import Elysia, { t } from "elysia";
 import { FileStorageService } from "../../services/storage/s3";
 import { generateDoc } from "../../utils/doc";
 import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
-import { AuthModel } from "../auth/model";
-import { UserModel } from "./model";
-import { UserService } from "./service";
+import { AuthModel } from "../auth/AuthModel";
+import { UserModel } from "./UserModel";
+import { UserService } from "./UserService";
 
 export const userPlugin = new Elysia({
   name: "user",

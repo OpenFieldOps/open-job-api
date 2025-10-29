@@ -67,9 +67,7 @@ TEST_FILES := $(shell find ./src/tests -name "*.test.ts")
 tests:
 	@./scripts/drop-db.sh
 	@$(CLI) push 1> /dev/null
-	@for file in $(TEST_FILES); do \
-		bun test $$file || exit 1; \
-	done
+	bun test
 
 pre-commit:
 	@echo "Starting pre-commit checks..."

@@ -1,5 +1,5 @@
-import type { AuthModel } from "../src/modules/auth/model";
-import { AuthService } from "../src/modules/auth/service";
+import type { AuthModel } from "../src/modules/auth/AuthModel";
+import { AuthService } from "../src/modules/auth/AuthService";
 
 export const dummyUser = {
   email: "dummy@gmail.com",

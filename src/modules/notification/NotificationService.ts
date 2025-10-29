@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import { notificationTable } from "../../services/db/schema";
-import type { UserNotificationModel } from "./model";
+import type { UserNotificationModel } from "./NotificationModel";
 
 export abstract class UserNotificationSerice {
   static async sendNotification(

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { createDummyData, createSecondaryDummyData } from "../../scripts/dummy";
-import type { UserModel } from "../modules/user/model";
+import type { UserModel } from "../modules/user/UserModel";
 import { api } from "./setup";
 import { userHeader } from "./utils";
 

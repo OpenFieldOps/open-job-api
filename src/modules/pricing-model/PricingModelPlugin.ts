@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { roleMacroPlugin } from "../auth/macro";
-import { PricingModel } from "./model";
-import { PricingModelService } from "./service";
+import { PricingModel } from "./PricingModelModel";
+import { PricingModelService } from "./PricingModelService";
 
 export const pricingModelPlugin = new Elysia({
   name: "pricing-model",

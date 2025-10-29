@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   pgTable,
   serial,
   text,
@@ -20,6 +21,9 @@ export const jobTable = pgTable(
     title: defaultVarChar(),
     description: text().notNull().default(""),
     assignedTo: tableIdRef(userTable.id),
+    assignedClient: integer().references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
     createdBy: tableIdRef(userTable.id),
     createdAt: defaultDate(),
     updatedAt: defaultDate(),
@@ -30,6 +34,7 @@ export const jobTable = pgTable(
   },
   (job) => [
     index("job_assigned_to_idx").on(job.assignedTo),
+    index("job_assigned_client_idx").on(job.assignedClient),
     index("job_created_by_idx").on(job.createdBy),
     index("job_start_date_idx").on(job.startDate),
     index("job_end_date_idx").on(job.endDate),

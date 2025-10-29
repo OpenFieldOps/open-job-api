@@ -1,13 +1,13 @@
 import { and, eq, gte, lt, not, or } from "drizzle-orm";
+import { status } from "elysia";
 import { db } from "../../../services/db/db";
 import { jobTable, userAdminTable } from "../../../services/db/schema";
 import { AppError } from "../../../utils/error";
-import type { JobModel } from ".././model";
-import type { UserModel } from "../../user/model";
-import { userJobAccessCondition } from "./access";
-import { UserNotificationModel } from "../../notification/model";
-import { UserNotificationSerice } from "../../notification/service";
-import { status } from "elysia";
+import { UserNotificationModel } from "../../notification/NotificationModel";
+import { UserNotificationSerice } from "../../notification/NotificationService";
+import type { UserModel } from "../../user/UserModel";
+import type { JobModel } from "../JobModel";
+import { userJobAccessCondition } from "./JobAccess";
 
 export abstract class JobService {
   static async createJob(body: JobModel.JobCreateBody, userId: number) {
@@ -34,6 +34,7 @@ export abstract class JobService {
           startDate: body.startDate,
           endDate: body.endDate,
           assignedTo: body.assignedTo,
+          assignedClient: body.assignedClient,
           status: body.status || "scheduled",
           createdBy: userId,
         })

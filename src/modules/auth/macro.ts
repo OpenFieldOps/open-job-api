@@ -2,7 +2,7 @@ import jwt from "@elysiajs/jwt";
 import Elysia from "elysia";
 import { config } from "../../config";
 import { AppError } from "../../utils/error";
-import type { UserModel } from "../user/model";
+import type { UserModel } from "../user/UserModel";
 
 export const jwtPlugin = jwt({
   name: "jwt",

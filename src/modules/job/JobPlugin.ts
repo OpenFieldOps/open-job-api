@@ -1,11 +1,11 @@
 import Elysia, { t } from "elysia";
 import { paramsWithId } from "../../utils/validation";
 import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
-import { JobModel } from "./model";
-import { JobService } from "./services/job.service";
-import { JobDocumentService } from "./services/job.document.service";
-import { JobTaskService } from "./services/job.task.service";
-import { JobReportService } from "./services/job.report.service";
+import { JobModel } from "./JobModel";
+import { JobDocumentService } from "./services/JobDocumentService";
+import { JobReportService } from "./services/JobReportService";
+import { JobService } from "./services/JobService";
+import { JobTaskService } from "./services/JobTaskService";
 
 export const jobPlugin = new Elysia({
   name: "job",

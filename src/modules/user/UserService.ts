@@ -7,9 +7,9 @@ import {
 } from "../../services/db/schema";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
-import type { AuthModel } from "../auth/model";
-import { AuthService } from "../auth/service";
-import { UserModel } from "./model";
+import type { AuthModel } from "../auth/AuthModel";
+import { AuthService } from "../auth/AuthService";
+import { UserModel } from "./UserModel";
 
 export abstract class UserService {
   static async updateUserInfo(body: UserModel.UserUpdateBody, userId: number) {

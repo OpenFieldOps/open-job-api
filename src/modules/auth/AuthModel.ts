@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import { UserModel } from "../user/model";
+import { UserModel } from "../user/UserModel";
 
 export namespace AuthModel {
 	export const RegisterUserBody = t.Object({

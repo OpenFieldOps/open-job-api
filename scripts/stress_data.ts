@@ -1,11 +1,12 @@
+/** biome-ignore-all lint/performance/noAwaitInLoops: testing script */
 import dayjs from "dayjs";
-import type { AuthModel } from "../src/modules/auth/model";
-import { AuthService } from "../src/modules/auth/service";
-import type { JobModel } from "../src/modules/job/model";
-import { UserNotificationModel } from "../src/modules/notification/model";
-import { UserNotificationSerice } from "../src/modules/notification/service";
-import type { UserModel } from "../src/modules/user/model";
-import { JobService } from "../src/modules/job/services/job.service";
+import type { AuthModel } from "../src/modules/auth/AuthModel";
+import { AuthService } from "../src/modules/auth/AuthService";
+import type { JobModel } from "../src/modules/job/JobModel";
+import { JobService } from "../src/modules/job/services/JobService";
+import { UserNotificationModel } from "../src/modules/notification/NotificationModel";
+import { UserNotificationSerice } from "../src/modules/notification/NotificationService";
+import type { UserModel } from "../src/modules/user/UserModel";
 
 export async function createDummyStressData(userCount: number) {
   const adminResponse = (await AuthService.registerUserAdmin({

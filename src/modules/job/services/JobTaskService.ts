@@ -1,10 +1,10 @@
 import { and, eq, or } from "drizzle-orm";
+import { status } from "elysia";
 import { db } from "../../../services/db/db";
 import { jobTable, jobTaskTable } from "../../../services/db/schema";
 import { AppError } from "../../../utils/error";
-import type { JobModel } from ".././model";
-import { withUserJob } from "./access";
-import { status } from "elysia";
+import type { JobModel } from "../JobModel";
+import { withUserJob } from "./JobAccess";
 
 export abstract class JobTaskService {
   static async getJobTasks(jobId: number, userId: number) {
