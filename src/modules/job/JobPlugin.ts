@@ -3,6 +3,7 @@ import { paramsWithId } from "../../utils/validation";
 import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
 import { JobModel } from "./JobModel";
 import { JobDocumentService } from "./services/JobDocumentService";
+import { JobIncomeService } from "./services/JobIncomeService";
 import { JobReportService } from "./services/JobReportService";
 import { JobService } from "./services/JobService";
 import { JobTaskService } from "./services/JobTaskService";
@@ -240,6 +241,29 @@ export const jobPlugin = new Elysia({
       detail: {
         summary: "Get Job Report Files",
         description: "Retrieve all files associated with a job report.",
+      },
+    }
+  )
+  .get(
+    "/income",
+    async ({ query, user }) =>
+      JobIncomeService.getDailyIncome(user.id, query.startDate, query.endDate),
+    {
+      user: true,
+      query: t.Object({
+        startDate: t.String({
+          description: "Start date in ISO format (YYYY-MM-DD)",
+          examples: ["2024-01-01"],
+        }),
+        endDate: t.String({
+          description: "End date in ISO format (YYYY-MM-DD)",
+          examples: ["2024-01-31"],
+        }),
+      }),
+      detail: {
+        summary: "Get Daily Income",
+        description:
+          "Calculate daily income from jobs within a date range. Returns an array of daily income with job details and pricing calculations.",
       },
     }
   );

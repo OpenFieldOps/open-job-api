@@ -1,4 +1,4 @@
 {
   "entry": ["src/tests/**/*.ts"],
-  "ignore": ["src/main.ts", "scripts/**/*.ts"]
+  "ignore": ["src/main.ts", "scripts/**/*.ts", "drizzle.config.test.ts"]
 }
