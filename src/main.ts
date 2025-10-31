@@ -7,54 +7,54 @@ import "./services/db/db";
 import { cors } from "@elysiajs/cors";
 import { authPlugin } from "./modules/auth/AuthPlugin";
 import { filePlugin } from "./modules/files/FilesPlugin";
+import { InvoicePlugin } from "./modules/invoice/InvoicePlugin";
 import { userNotificationPlugin } from "./modules/notification/NotificationPlugin";
 import { pricingModelPlugin } from "./modules/pricing-model/PricingModelPlugin";
 
 export const app = new Elysia({
-  name: "App",
-  prefix: "/api",
+	name: "App",
+	prefix: "/api",
 })
-  .use(cors())
-  .use(
-    Bun.env.NODE_ENV === "development"
-      ? swagger({
-          documentation: {
-            info: {
-              description: "API documentation for the service app",
-              title: "Service API",
-              version: "1.0.0",
-            },
-          },
-        })
-      : new Elysia()
-  )
-  .onError((error) => {
-    if (error.error instanceof Error) {
-      console.error("Error:", error.error);
-    }
-  })
-  .use(authPlugin)
-  .use(userPlugin)
-  .use(userNotificationPlugin)
-  .use(jobPlugin)
-  .use(filePlugin)
-  .use(pricingModelPlugin);
+	.use(cors())
+	.use(
+		Bun.env.NODE_ENV === "development"
+			? swagger({
+					documentation: {
+						info: {
+							description: "API documentation for the service app",
+							title: "Service API",
+							version: "1.0.0",
+						},
+					},
+				})
+			: new Elysia(),
+	)
+	.onError((error) => {
+		console.error(error);
+	})
+	.use(authPlugin)
+	.use(userPlugin)
+	.use(userNotificationPlugin)
+	.use(jobPlugin)
+	.use(filePlugin)
+	.use(pricingModelPlugin)
+	.use(InvoicePlugin);
 
 await new Promise<void>((resolve) => {
-  app.listen(
-    {
-      port: config.server.backend_port,
-      hostname: "0.0.0.0",
-    },
-    () => {
-      if (Bun.env.NODE_ENV !== "test") {
-        console.log(
-          `Server is running on http://localhost:${config.server.backend_port}`
-        );
-      }
-      resolve();
-    }
-  );
+	app.listen(
+		{
+			port: config.server.backend_port,
+			hostname: "0.0.0.0",
+		},
+		() => {
+			if (Bun.env.NODE_ENV !== "test") {
+				console.log(
+					`Server is running on http://localhost:${config.server.backend_port}`,
+				);
+			}
+			resolve();
+		},
+	);
 });
 
 export type App = typeof app;

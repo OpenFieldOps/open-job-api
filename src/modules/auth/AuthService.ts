@@ -1,15 +1,17 @@
 import { eq } from "drizzle-orm";
+import WelcomeEmail from "../../emails/WelcomeEmail";
 import { db } from "../../services/db/db";
 import {
   userAdminTable,
   userLocationTable,
   userTable,
 } from "../../services/db/schema";
+import { sendEmail } from "../../services/mail/resend";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
 import { UserModel } from "../user/UserModel";
-import { jwtPlugin } from "./macro";
 import type { AuthModel } from "./AuthModel";
+import { jwtPlugin } from "./macro";
 
 async function signUserWithoutPassword(user: UserModel.UserWithoutPassword) {
   const formatedUser = {
@@ -69,6 +71,16 @@ export abstract class AuthService {
     }
     const auth = await signUserWithoutPassword(res);
     auth.user = FileStorageService.resolveFile(auth.user, "avatar");
+
+    await sendEmail(
+      WelcomeEmail({
+        firstName: registerBody.firstName,
+        lastName: registerBody.lastName,
+      }),
+      registerBody.email,
+      "Welcome to Planned Service"
+    );
+
     return auth;
   }
 

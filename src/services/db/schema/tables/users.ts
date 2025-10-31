@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   type AnyPgColumn,
   doublePrecision,
@@ -53,3 +54,10 @@ export const userSupervisorTable = pgTable("users_supervisor", {
   userId: tableIdRef(userTable.id).unique(),
   supervisorId: tableIdRef(userTable.id),
 });
+
+export const userRelations = relations(userTable, ({ one }) => ({
+  pricing: one(pricingModelTable, {
+    fields: [userTable.pricingModel],
+    references: [pricingModelTable.id],
+  }),
+}));

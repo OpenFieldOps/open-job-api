@@ -72,7 +72,7 @@ export const pricingModelPlugin = new Elysia({
         userId: t.Number(),
       }),
       body: t.Object({
-        pricingModelId: t.Number(),
+        pricingModelId: t.Nullable(t.Number()),
       }),
       detail: {
         summary: "Assign Pricing Model to User",

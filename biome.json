@@ -30,7 +30,10 @@
       "complexity": {
         "noStaticOnlyClass": "off"
       },
-      "performance": "warn",
+      "performance": {
+        "recommended": true,
+        "useSolidForComponent": "off"
+      },
       "recommended": true,
       "style": {
         "noNamespace": "off",

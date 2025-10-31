@@ -118,21 +118,21 @@ export abstract class PricingModelService {
   static async setUserPricingModel(
     adminUserId: number,
     targetUserId: number,
-    pricingModelId: number
+    pricingModelId: number | null
   ) {
-    // Verify that the pricing model belongs to the admin
-    const pricingModel = await db.query.pricingModelTable.findFirst({
-      where: and(
-        eq(pricingModelTable.id, pricingModelId),
-        eq(pricingModelTable.userId, adminUserId)
-      ),
-    });
+    if (pricingModelId !== null) {
+      const pricingModel = await db.query.pricingModelTable.findFirst({
+        where: and(
+          eq(pricingModelTable.id, pricingModelId),
+          eq(pricingModelTable.userId, adminUserId)
+        ),
+      });
 
-    if (!pricingModel) {
-      return AppError.NotFound;
+      if (!pricingModel) {
+        return AppError.NotFound;
+      }
     }
 
-    // Update the user's pricing model
     const updatedUser = await db
       .update(userTable)
       .set({

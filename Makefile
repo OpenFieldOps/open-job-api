@@ -63,8 +63,8 @@ stress-user:
 
 TEST_FILES := $(shell find ./src/tests -name "*.test.ts")
 
-
 tests:
+	@./scripts/drop-test-db.sh
 	@$(CLI) push --config drizzle.config.test.ts
 	bun test
 
