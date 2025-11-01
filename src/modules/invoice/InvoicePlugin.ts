@@ -5,6 +5,7 @@ import { InvoiceService } from "./InvoiceService";
 export const InvoicePlugin = new Elysia({
   name: "invoice",
   prefix: "/invoice",
+  tags: ["invoice"],
 })
   .use(authMacroPlugin)
   .post(

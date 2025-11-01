@@ -44,7 +44,7 @@ export async function createDummyStressData(userCount: number) {
         const job: JobModel.JobCreateBody = {
           title: `Stress Test Job ${jobIndex} for Operator ${userCount}_${jobIndex}`,
           description: `This is a stress test job for operator ${userCount}_${jobIndex}.`,
-          assignedTo: operator.id,
+          operatorIds: [operator.id],
           startDate: dayjs(startDate)
             .add(jobIndex, "day")
             .add(i * 3, "hour")

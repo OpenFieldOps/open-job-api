@@ -4,7 +4,8 @@ import { UserNotificationSerice } from "./NotificationService";
 
 export const userNotificationPlugin = new Elysia({
   name: "notification",
-  prefix: "notification",
+  prefix: "/notification",
+  tags: ["notification"],
 })
   .use(authMacroPlugin)
   .get(

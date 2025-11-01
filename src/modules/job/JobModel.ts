@@ -32,8 +32,8 @@ export namespace JobModel {
     id: t.Integer(),
     title: t.String(),
     description: t.Optional(t.String()),
-    assignedTo: t.Integer(),
     assignedClient: t.Optional(t.Nullable(t.Integer())),
+    broadcast: t.Boolean(),
     startDate: t.Optional(t.String()),
     endDate: t.Optional(t.String()),
     location: t.Optional(t.String()),
@@ -73,8 +73,11 @@ export namespace JobModel {
       error: () => status(422, "Title must be at least 3 characters long"),
     }),
     description: t.Optional(t.String()),
-    assignedTo: t.Integer(),
+    operatorIds: t.Array(t.Integer(), {
+      description: "Array of operator IDs to assign to this job",
+    }),
     assignedClient: t.Optional(t.Integer()),
+    broadcast: t.Optional(t.Boolean()),
     startDate: t.Optional(t.String()),
     endDate: t.Optional(t.String()),
     location: t.Optional(t.String()),
@@ -87,8 +90,8 @@ export namespace JobModel {
     id: t.Integer(),
     title: t.Optional(t.String({ minLength: 1 })),
     description: t.Optional(t.String()),
-    assignedTo: t.Optional(t.Integer()),
     assignedClient: t.Optional(t.Nullable(t.Integer())),
+    broadcast: t.Optional(t.Boolean()),
     startDate: t.Optional(t.String()),
     endDate: t.Optional(t.String()),
     location: t.Optional(t.String()),
@@ -142,4 +145,22 @@ export namespace JobModel {
       })
     ),
   });
+
+  export const JobOperatorAssignment = t.Object({
+    id: t.Integer(),
+    jobId: t.Integer(),
+    operatorId: t.Integer(),
+    assignedAt: t.String(),
+  });
+
+  export type JobOperatorAssignment = typeof JobOperatorAssignment.static;
+
+  export const JobOperatorUpdateBody = t.Object({
+    jobId: t.Integer(),
+    operatorIds: t.Array(t.Integer(), {
+      description: "Array of operator IDs to assign to this job",
+    }),
+  });
+
+  export type JobOperatorUpdateBody = typeof JobOperatorUpdateBody.static;
 }

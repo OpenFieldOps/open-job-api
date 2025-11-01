@@ -16,14 +16,15 @@ const defaultJobData = {
 };
 
 async function createDefaultJob(
-  admin: AuthModel.AuthenticatedUserSuccessResponse
+  admin: AuthModel.AuthenticatedUserSuccessResponse,
+  operatorIds?: number[]
 ) {
   return await api.job.post(
     {
       ...defaultJobData,
       startDate: defaultJobDate.start.toISOString(),
       endDate: defaultJobDate.end.toISOString(),
-      assignedTo: admin.user.id,
+      operatorIds: operatorIds || [admin.user.id],
       assignedClient: admin.user.id,
     },
     userHeader(admin.token)
@@ -50,7 +51,7 @@ describe("Jobs Tests", () => {
     const job_res = await api.job.post(
       {
         ...defaultJobData,
-        assignedTo: dummy.admin.user.id,
+        operatorIds: [dummy.operator.user.id],
         assignedClient: dummy.admin.user.id,
       },
       userHeader(dummy.admin.token)
@@ -193,7 +194,7 @@ describe("Jobs Tests", () => {
         title: "Job for main operator",
         startDate: defaultJobDate.start.toISOString(),
         endDate: defaultJobDate.end.toISOString(),
-        assignedTo: dummy.admin.user.id,
+        operatorIds: [dummy.operator.user.id],
         assignedClient: dummy.admin.user.id,
       },
       userHeader(dummy.admin.token)
@@ -205,7 +206,7 @@ describe("Jobs Tests", () => {
         title: "Job for secondary operator",
         startDate: defaultJobDate.start.toISOString(),
         endDate: defaultJobDate.end.toISOString(),
-        assignedTo: secondaryDummy.operator.user.id,
+        operatorIds: [secondaryDummy.operator.user.id],
         assignedClient: secondaryDummy.operator.user.id,
       },
       userHeader(secondaryDummy.admin.token)
@@ -218,7 +219,7 @@ describe("Jobs Tests", () => {
       query: {
         start: defaultJobDate.start.clone().startOf("day").toISOString(),
         end: defaultJobDate.end.clone().endOf("day").toISOString(),
-        operatorId: dummy.admin.user.id,
+        operatorId: dummy.operator.user.id,
       },
       ...userHeader(dummy.admin.token),
     });
@@ -226,10 +227,6 @@ describe("Jobs Tests", () => {
     expect(jobsForMainOperator.status).toBe(200);
     expect(jobsForMainOperator.data).toBeArray();
     expect(jobsForMainOperator.data).toHaveLength(1);
-    expect(jobsForMainOperator.data?.[0]).toHaveProperty(
-      "assignedTo",
-      dummy.admin.user.id
-    );
 
     const jobsForSecondaryOperator = await api.job.get({
       query: {
@@ -237,16 +234,12 @@ describe("Jobs Tests", () => {
         end: defaultJobDate.end.clone().endOf("day").toISOString(),
         operatorId: secondaryDummy.operator.user.id,
       },
-      ...userHeader(dummy.admin.token),
+      ...userHeader(secondaryDummy.admin.token),
     });
 
     expect(jobsForSecondaryOperator.status).toBe(200);
     expect(jobsForSecondaryOperator.data).toBeArray();
     expect(jobsForSecondaryOperator.data).toHaveLength(1);
-    expect(jobsForSecondaryOperator.data?.[0]).toHaveProperty(
-      "assignedTo",
-      secondaryDummy.operator.user.id
-    );
   });
 
   it("should create a job report", async () => {

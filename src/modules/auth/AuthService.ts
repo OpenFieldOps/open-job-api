@@ -72,14 +72,18 @@ export abstract class AuthService {
     const auth = await signUserWithoutPassword(res);
     auth.user = FileStorageService.resolveFile(auth.user, "avatar");
 
-    await sendEmail(
-      WelcomeEmail({
-        firstName: registerBody.firstName,
-        lastName: registerBody.lastName,
-      }),
-      registerBody.email,
-      "Welcome to Planned Service"
-    );
+    try {
+      await sendEmail(
+        WelcomeEmail({
+          firstName: registerBody.firstName,
+          lastName: registerBody.lastName,
+        }),
+        registerBody.email,
+        "Welcome to Planned Service"
+      );
+    } catch (error) {
+      console.warn("Failed to send welcome email:", error);
+    }
 
     return auth;
   }

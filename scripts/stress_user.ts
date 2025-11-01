@@ -44,7 +44,7 @@ async function launchUserStressTest(userCount: number): Promise<void> {
       {
         title: `Stress Test Job for User ${userCount}`,
         description: "This is a stress test job.",
-        assignedTo: userCount,
+        operatorIds: [userCount],
         startDate: dayjs().add(1, "day").toISOString(),
         endDate: dayjs().add(2, "day").toISOString(),
       },

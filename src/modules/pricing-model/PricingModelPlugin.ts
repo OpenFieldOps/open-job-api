@@ -6,6 +6,7 @@ import { PricingModelService } from "./PricingModelService";
 export const pricingModelPlugin = new Elysia({
   name: "pricing-model",
   prefix: "/pricing-model",
+  tags: ["pricing-model"],
 })
   .use(roleMacroPlugin)
   .post(

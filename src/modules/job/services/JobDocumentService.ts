@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../../services/db/db";
-import { fileTable, jobFiles, jobTable } from "../../../services/db/schema";
+import { fileTable, jobFiles } from "../../../services/db/schema";
 import { FileStorageService } from "../../../services/storage/s3";
 import { AppError } from "../../../utils/error";
 import type { FileModel } from "../../models/FileModel";
@@ -11,6 +11,9 @@ export abstract class JobDocumentService {
     jobId: number,
     userId: number
   ): Promise<FileModel.DbFile[]> {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return [];
+
     return db
       .select({
         id: fileTable.id,
@@ -18,18 +21,12 @@ export abstract class JobDocumentService {
       })
       .from(jobFiles)
       .innerJoin(fileTable, eq(fileTable.id, jobFiles.fileId))
-      .innerJoin(jobTable, eq(jobTable.id, jobFiles.jobId))
-      .where(userJobAccessCondition(userId, jobId));
+      .where(eq(jobFiles.jobId, jobId));
   }
 
   static async createJobDocument(jobId: number, file: File, userId: number) {
-    const job = await db
-      .select()
-      .from(jobTable)
-      .where(userJobAccessCondition(userId, jobId))
-      .limit(1);
-
-    if (job.length === 0) return AppError.Unauthorized;
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
 
     const fileId = await FileStorageService.uploadFile(file);
     await db.insert(jobFiles).values({ fileId, jobId });
@@ -42,17 +39,10 @@ export abstract class JobDocumentService {
     userId: number,
     fileId: string
   ) {
-    const userJob = db
-      .$with("user_job")
-      .as(
-        db
-          .select()
-          .from(jobFiles)
-          .innerJoin(jobTable, eq(jobTable.id, jobFiles.jobId))
-          .where(userJobAccessCondition(userId, jobId))
-      );
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
 
-    await db.with(userJob).delete(jobFiles).where(eq(jobFiles.fileId, fileId));
+    await db.delete(jobFiles).where(eq(jobFiles.fileId, fileId));
     await FileStorageService.deleteFile(fileId);
   }
 }

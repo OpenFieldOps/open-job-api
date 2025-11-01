@@ -10,14 +10,15 @@ async function createJobWithClient(
   clientId: number,
   startDate: string,
   endDate: string,
-  title: string
+  title: string,
+  operatorId?: number
 ) {
   return await api.job.post(
     {
       title,
       startDate,
       endDate,
-      assignedTo: admin.user.id,
+      operatorIds: [operatorId || admin.user.id],
       assignedClient: clientId,
     },
     userHeader(admin.token)

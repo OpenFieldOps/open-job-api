@@ -1,12 +1,15 @@
 import type { AuthModel } from "../src/modules/auth/AuthModel";
 import { AuthService } from "../src/modules/auth/AuthService";
 
+const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
 export const dummyUser = {
   email: "dummy@gmail.com",
   username: "dummy",
   password: "password",
   firstName: "dummy",
   lastName: "dummy",
+  phone: "+1234567890",
 };
 
 export const dummyOperatorUser = {
@@ -15,6 +18,7 @@ export const dummyOperatorUser = {
   password: "password",
   firstName: "operator",
   lastName: "operator",
+  phone: "+1234567891",
 };
 
 export const dummySecondaryUser = {
@@ -23,6 +27,7 @@ export const dummySecondaryUser = {
   password: "password",
   firstName: "dummy2",
   lastName: "dummy2",
+  phone: "+1234567892",
 };
 
 export const dummySecondaryOperatorUser = {
@@ -31,18 +36,33 @@ export const dummySecondaryOperatorUser = {
   password: "password",
   firstName: "operator2",
   lastName: "operator2",
+  phone: "+1234567893",
 };
 
 export async function createDummyData() {
-  const res = (await AuthService.registerUserAdmin(
-    dummyUser
-  )) as AuthModel.AuthenticatedUserSuccessResponse;
+  const uniqueId = generateUniqueId();
+  const uniqueDummyUser = {
+    ...dummyUser,
+    email: `dummy-${uniqueId}@gmail.com`,
+    username: `dummy-${uniqueId}`,
+  };
+  const uniqueOperatorUser = {
+    ...dummyOperatorUser,
+    email: `operator-${uniqueId}@gmail.com`,
+    username: `operator-${uniqueId}`,
+  };
 
-  await AuthService.registerUser(dummyOperatorUser, "operator", res.user.id);
+  const res = await AuthService.registerUserAdmin(uniqueDummyUser);
+
+  if (!res || typeof res !== 'object' || !('user' in res)) {
+    throw new Error(`Failed to register admin user: ${JSON.stringify(res)}`);
+  }
+
+  await AuthService.registerUser(uniqueOperatorUser, "operator", res.user.id);
 
   const operatorAuth = (await AuthService.loginUser({
-    email: dummyOperatorUser.email,
-    password: dummyOperatorUser.password,
+    email: uniqueOperatorUser.email,
+    password: uniqueOperatorUser.password,
   })) as AuthModel.AuthenticatedUserSuccessResponse;
 
   return {
@@ -52,19 +72,33 @@ export async function createDummyData() {
 }
 
 export async function createSecondaryDummyData() {
-  const res = (await AuthService.registerUserAdmin(
-    dummySecondaryUser
-  )) as AuthModel.AuthenticatedUserSuccessResponse;
+  const uniqueId = generateUniqueId();
+  const uniqueSecondaryUser = {
+    ...dummySecondaryUser,
+    email: `dummy2-${uniqueId}@gmail.com`,
+    username: `dummy2-${uniqueId}`,
+  };
+  const uniqueSecondaryOperatorUser = {
+    ...dummySecondaryOperatorUser,
+    email: `operator2-${uniqueId}@gmail.com`,
+    username: `operator2-${uniqueId}`,
+  };
+
+  const res = await AuthService.registerUserAdmin(uniqueSecondaryUser);
+
+  if (!res || typeof res !== 'object' || !('user' in res)) {
+    throw new Error(`Failed to register secondary admin user: ${JSON.stringify(res)}`);
+  }
 
   await AuthService.registerUser(
-    dummySecondaryOperatorUser,
+    uniqueSecondaryOperatorUser,
     "operator",
     res.user.id
   );
 
   const operatorAuth = (await AuthService.loginUser({
-    email: dummySecondaryOperatorUser.email,
-    password: dummySecondaryOperatorUser.password,
+    email: uniqueSecondaryOperatorUser.email,
+    password: uniqueSecondaryOperatorUser.password,
   })) as AuthModel.AuthenticatedUserSuccessResponse;
 
   return {

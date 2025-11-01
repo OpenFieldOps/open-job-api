@@ -1,45 +1,63 @@
-import { and, eq, gte, lt, not, or } from "drizzle-orm";
+import { and, eq, gte, inArray, lt, not } from "drizzle-orm";
 import { status } from "elysia";
 import { db } from "../../../services/db/db";
-import { jobTable, userAdminTable } from "../../../services/db/schema";
+import {
+  jobOperatorTable,
+  jobTable,
+  userAdminTable,
+} from "../../../services/db/schema";
 import { AppError } from "../../../utils/error";
 import { UserNotificationModel } from "../../notification/NotificationModel";
 import { UserNotificationSerice } from "../../notification/NotificationService";
 import type { UserModel } from "../../user/UserModel";
 import type { JobModel } from "../JobModel";
 import { userJobAccessCondition } from "./JobAccess";
+import { JobOperatorService } from "./JobOperatorService";
 
 export abstract class JobService {
   static async createJob(body: JobModel.JobCreateBody, userId: number) {
-    const isAManagerUser = (
-      await db
+    if (body.operatorIds.length > 0) {
+      const managedUsers = await db
         .select({ id: userAdminTable.id })
         .from(userAdminTable)
         .where(
           and(
             eq(userAdminTable.adminId, userId),
-            eq(userAdminTable.userId, body.assignedTo)
+            inArray(userAdminTable.userId, body.operatorIds)
           )
-        )
-    ).pop();
+        );
 
-    if (!isAManagerUser) return AppError.Unauthorized;
+      if (managedUsers.length !== body.operatorIds.length) {
+        return AppError.Unauthorized;
+      }
+    }
 
-    const job = (
-      await db
+    const job = await db.transaction(async (tx) => {
+      const [createdJob] = await tx
         .insert(jobTable)
         .values({
           title: body.title,
           description: body.description,
           startDate: body.startDate,
           endDate: body.endDate,
-          assignedTo: body.assignedTo,
           assignedClient: body.assignedClient,
           status: body.status || "scheduled",
           createdBy: userId,
         })
-        .returning()
-    )[0];
+        .returning();
+
+      if (body.operatorIds.length > 0) {
+        await tx.insert(jobOperatorTable).values(
+          body.operatorIds.map((operatorId) => ({
+            jobId: createdJob.id,
+            operatorId,
+            assignedAt: new Date().toISOString(),
+          }))
+        );
+      }
+
+      return createdJob;
+    });
 
     return status(200, job);
   }
@@ -55,13 +73,25 @@ export abstract class JobService {
       query.notStatus = undefined;
     }
 
-    let userCondition = or(
-      eq(jobTable.assignedTo, id),
-      eq(jobTable.createdBy, id)
-    );
+    let jobIds: number[] | undefined;
 
     if (query.operatorId) {
-      userCondition = eq(jobTable.assignedTo, query.operatorId);
+      jobIds = await JobOperatorService.getOperatorJobIds(query.operatorId);
+    } else {
+      const operatorJobIds = await JobOperatorService.getOperatorJobIds(id);
+      const createdJobs = await db
+        .select({ id: jobTable.id })
+        .from(jobTable)
+        .where(eq(jobTable.createdBy, id));
+
+      jobIds = [
+        ...operatorJobIds,
+        ...createdJobs.map((j) => j.id),
+      ];
+    }
+
+    if (jobIds.length === 0) {
+      return [];
     }
 
     const jobs = await db
@@ -69,7 +99,7 @@ export abstract class JobService {
       .from(jobTable)
       .where(
         and(
-          userCondition,
+          inArray(jobTable.id, jobIds),
           query.start ? gte(jobTable.startDate, query.start) : undefined,
           query.end ? lt(jobTable.endDate, query.end) : undefined,
           query.status ? eq(jobTable.status, query.status) : undefined,
@@ -85,13 +115,16 @@ export abstract class JobService {
     body: JobModel.JobUpdateBody,
     user: UserModel.UserWithoutPassword
   ) {
+    const hasAccess = await userJobAccessCondition(user.id, body.id);
+    if (!hasAccess) return AppError.Unauthorized;
+
     const filteredBody = user.role === "admin" ? body : { status: body.status };
 
     const job = (
       await db
         .update(jobTable)
         .set(filteredBody)
-        .where(userJobAccessCondition(user.id, body.id))
+        .where(eq(jobTable.id, body.id))
         .returning()
     ).pop();
 
@@ -110,9 +143,12 @@ export abstract class JobService {
   }
 
   static async deleteJob(jobId: number, userId: number) {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.NotFound;
+
     const deleted = await db
       .delete(jobTable)
-      .where(userJobAccessCondition(userId, jobId))
+      .where(eq(jobTable.id, jobId))
       .returning();
 
     if (deleted.length === 0) return AppError.NotFound;
@@ -120,10 +156,13 @@ export abstract class JobService {
   }
 
   static async getJobById(id: number, userId: number) {
+    const hasAccess = await userJobAccessCondition(userId, id);
+    if (!hasAccess) return AppError.NotFound;
+
     const job = await db
       .select()
       .from(jobTable)
-      .where(userJobAccessCondition(userId, id))
+      .where(eq(jobTable.id, id))
       .limit(1);
 
     if (job.length === 0) return AppError.NotFound;

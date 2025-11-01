@@ -4,6 +4,7 @@ import { authMacroPlugin, roleMacroPlugin } from "../auth/macro";
 import { JobModel } from "./JobModel";
 import { JobDocumentService } from "./services/JobDocumentService";
 import { JobIncomeService } from "./services/JobIncomeService";
+import { JobOperatorService } from "./services/JobOperatorService";
 import { JobReportService } from "./services/JobReportService";
 import { JobService } from "./services/JobService";
 import { JobTaskService } from "./services/JobTaskService";
@@ -264,6 +265,33 @@ export const jobPlugin = new Elysia({
         summary: "Get Daily Income",
         description:
           "Calculate daily income from jobs within a date range. Returns an array of daily income with job details and pricing calculations.",
+      },
+    }
+  )
+  .get(
+    "/operators/:jobId",
+    async ({ params: { jobId }, user }) =>
+      JobOperatorService.getJobOperators(jobId, user.id),
+    {
+      user: true,
+      params: paramsWithId("jobId"),
+      detail: {
+        summary: "Get Job Operators",
+        description: "Retrieve all operators assigned to a specific job.",
+      },
+    }
+  )
+  .post(
+    "/operators",
+    async ({ body, user }) =>
+      JobOperatorService.updateJobOperators(body, user.id),
+    {
+      role: "admin",
+      body: JobModel.JobOperatorUpdateBody,
+      detail: {
+        summary: "Update Job Operators",
+        description:
+          "Assign operators to a job. This will replace all existing operator assignments.",
       },
     }
   );

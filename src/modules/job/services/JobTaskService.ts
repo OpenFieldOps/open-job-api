@@ -1,13 +1,16 @@
-import { and, eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { status } from "elysia";
 import { db } from "../../../services/db/db";
-import { jobTable, jobTaskTable } from "../../../services/db/schema";
+import { jobTaskTable } from "../../../services/db/schema";
 import { AppError } from "../../../utils/error";
 import type { JobModel } from "../JobModel";
-import { withUserJob } from "./JobAccess";
+import { userJobAccessCondition } from "./JobAccess";
 
 export abstract class JobTaskService {
   static async getJobTasks(jobId: number, userId: number) {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
+
     const tasks = await db
       .select({
         id: jobTaskTable.id,
@@ -16,13 +19,7 @@ export abstract class JobTaskService {
         jobId: jobTaskTable.jobId,
       })
       .from(jobTaskTable)
-      .leftJoin(jobTable, eq(jobTable.id, jobTaskTable.jobId))
-      .where(
-        and(
-          eq(jobTaskTable.jobId, jobId),
-          or(eq(jobTable.assignedTo, userId), eq(jobTable.createdBy, userId))
-        )
-      );
+      .where(eq(jobTaskTable.jobId, jobId));
 
     return status(200, tasks);
   }
@@ -32,9 +29,11 @@ export abstract class JobTaskService {
     body: JobModel.JobTaskCreateBody,
     userId: number
   ) {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
+
     const task = (
       await db
-        .with(withUserJob(userId, jobId))
         .insert(jobTaskTable)
         .values({
           jobId,
@@ -53,8 +52,10 @@ export abstract class JobTaskService {
     body: JobModel.JobTaskUpdateBody,
     userId: number
   ) {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
+
     const task = await db
-      .with(withUserJob(userId, jobId))
       .update(jobTaskTable)
       .set({
         title: body.title,
@@ -67,8 +68,10 @@ export abstract class JobTaskService {
   }
 
   static async deleteJobTask(jobId: number, taskId: number, userId: number) {
+    const hasAccess = await userJobAccessCondition(userId, jobId);
+    if (!hasAccess) return AppError.Unauthorized;
+
     const task = await db
-      .with(withUserJob(userId, jobId))
       .delete(jobTaskTable)
       .where(eq(jobTaskTable.id, taskId))
       .returning();

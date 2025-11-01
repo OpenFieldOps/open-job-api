@@ -20,10 +20,10 @@ export const jobTable = pgTable(
     id: defaultId(),
     title: defaultVarChar(),
     description: text().notNull().default(""),
-    assignedTo: tableIdRef(userTable.id),
     assignedClient: integer().references(() => userTable.id, {
       onDelete: "cascade",
     }),
+    broadcast: boolean().notNull().default(true),
     createdBy: tableIdRef(userTable.id),
     createdAt: defaultDate(),
     updatedAt: defaultDate(),
@@ -33,7 +33,6 @@ export const jobTable = pgTable(
     status: jobStatusEnum("status").notNull().default("scheduled"),
   },
   (job) => [
-    index("job_assigned_to_idx").on(job.assignedTo),
     index("job_assigned_client_idx").on(job.assignedClient),
     index("job_created_by_idx").on(job.createdBy),
     index("job_start_date_idx").on(job.startDate),
@@ -85,3 +84,21 @@ export const jobFiles = pgTable("job_file", {
     .references(() => fileTable.id, { onDelete: "cascade" }),
   jobId: serial().references(() => jobTable.id, { onDelete: "cascade" }),
 });
+
+export const jobOperatorTable = pgTable(
+  "jobOperator",
+  {
+    id: defaultId(),
+    jobId: serial()
+      .notNull()
+      .references(() => jobTable.id, { onDelete: "cascade" }),
+    operatorId: serial()
+      .notNull()
+      .references(() => userTable.id, { onDelete: "cascade" }),
+    assignedAt: defaultDate().notNull(),
+  },
+  (table) => [
+    index("job_operator_job_id_idx").on(table.jobId),
+    index("job_operator_operator_id_idx").on(table.operatorId),
+  ]
+);
