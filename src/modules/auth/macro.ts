@@ -9,7 +9,7 @@ export const jwtPlugin = jwt({
   secret: config.server.jwt_secret,
 });
 
-async function userFromAuthorizationHeader(
+export async function userFromAuthorizationToken(
   authorization: string | undefined
 ): Promise<UserModel.UserWithoutPassword | undefined> {
   if (!authorization) return undefined;
@@ -27,7 +27,7 @@ export const authMacroPlugin = new Elysia({
 }).macro({
   user: {
     resolve: async ({ headers }) => {
-      const payload = await userFromAuthorizationHeader(headers.authorization);
+      const payload = await userFromAuthorizationToken(headers.authorization);
 
       if (!payload) {
         return AppError.Unauthorized;
@@ -46,7 +46,7 @@ export const roleMacroPlugin = new Elysia({
 }).macro({
   role: (role: UserModel.UserRole) => ({
     resolve: async ({ headers }) => {
-      const payload = await userFromAuthorizationHeader(headers.authorization);
+      const payload = await userFromAuthorizationToken(headers.authorization);
 
       if (!payload || payload.role !== role) {
         return AppError.Unauthorized;

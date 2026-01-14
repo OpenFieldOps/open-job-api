@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import DbUtils from "../../utils";
 import { jobStatusEnum } from "../enums";
+import { chatTable } from "./chat";
 import { fileTable } from "./files";
 import { userTable } from "./users";
 
@@ -20,6 +21,9 @@ export const jobTable = pgTable(
     id: defaultId(),
     title: defaultVarChar(),
     description: text().notNull().default(""),
+    chatId: integer()
+      .references(() => chatTable.id, { onDelete: "cascade" })
+      .notNull(),
     assignedClient: integer().references(() => userTable.id, {
       onDelete: "cascade",
     }),

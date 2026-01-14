@@ -1,14 +1,10 @@
 #!/bin/bash
 
-DB_HOST=localhost
-DB_PORT=55432
+DB_CONTAINER=postgres_test
 DB_NAME=testdb
 DB_USER=testuser
 
-export PGPASSWORD="testpass"
-
-
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -q -Atc "
+docker exec -e PGPASSWORD="testpass" "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -q -Atc "
 DO \$\$
 DECLARE
     obj RECORD;

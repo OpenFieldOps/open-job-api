@@ -1,7 +1,9 @@
 import type { AuthModel } from "../src/modules/auth/AuthModel";
 import { AuthService } from "../src/modules/auth/AuthService";
+import "../src/services/db/db";
 
-const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+const generateUniqueId = () =>
+  `${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
 export const dummyUser = {
   email: "dummy@gmail.com",
@@ -54,7 +56,7 @@ export async function createDummyData() {
 
   const res = await AuthService.registerUserAdmin(uniqueDummyUser);
 
-  if (!res || typeof res !== 'object' || !('user' in res)) {
+  if (!res || typeof res !== "object" || !("user" in res)) {
     throw new Error(`Failed to register admin user: ${JSON.stringify(res)}`);
   }
 
@@ -86,8 +88,10 @@ export async function createSecondaryDummyData() {
 
   const res = await AuthService.registerUserAdmin(uniqueSecondaryUser);
 
-  if (!res || typeof res !== 'object' || !('user' in res)) {
-    throw new Error(`Failed to register secondary admin user: ${JSON.stringify(res)}`);
+  if (!res || typeof res !== "object" || !("user" in res)) {
+    throw new Error(
+      `Failed to register secondary admin user: ${JSON.stringify(res)}`
+    );
   }
 
   await AuthService.registerUser(
@@ -108,7 +112,30 @@ export async function createSecondaryDummyData() {
 }
 
 if (require.main === module) {
-  await createDummyData()
-    .then(() => console.log("Dummy data created successfully"))
-    .catch((error) => console.error("Error creating dummy data:", error));
+  (async () => {
+    try {
+      // Create dummy user
+      const dummyResult = await AuthService.registerUserAdmin(dummyUser);
+      if (
+        !dummyResult ||
+        typeof dummyResult !== "object" ||
+        !("user" in dummyResult)
+      ) {
+        throw new Error(
+          `Failed to register dummy user: ${JSON.stringify(dummyResult)}`
+        );
+      }
+
+      // Create operator associated with dummy user
+      await AuthService.registerUser(
+        dummyOperatorUser,
+        "operator",
+        dummyResult.user.id
+      );
+
+      console.log("Dummy data created successfully");
+    } catch (error) {
+      console.error("Error creating dummy data:", error);
+    }
+  })();
 }

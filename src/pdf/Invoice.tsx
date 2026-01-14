@@ -118,7 +118,6 @@ export const InvoicePDF = ({
           <Text style={styles.title}>Invoice #{id}</Text>
           <Text>Date: {date}</Text>
         </View>
-
         <View style={styles.section}>
           <Text style={{ fontWeight: "bold" }}>Bill To:</Text>
           <View style={styles.clientInfo}>

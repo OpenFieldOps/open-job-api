@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import { userTable } from "../../services/db/schema";
+import { userAdminTable, userTable } from "../../services/db/schema";
 import { FileMb } from "../../utils/file";
 
 export namespace UserModel {
@@ -32,9 +32,10 @@ export namespace UserModel {
     role: t.UnionEnum(["admin", "operator", "client", "supervisor"] as const),
     lastSeen: t.String(),
     pricingModel: t.Optional(t.Nullable(t.Number())),
+    chatId: t.Number(),
   });
 
-  export const userWithoutPasswordSelect = {
+  export const userTableSelectFields = {
     id: userTable.id,
     username: userTable.username,
     email: userTable.email,
@@ -45,6 +46,11 @@ export namespace UserModel {
     lastSeen: userTable.lastSeen,
     phone: userTable.phone,
     pricingModel: userTable.pricingModel,
+  };
+
+  export const userWithoutPasswordSelectFields = {
+    ...userTableSelectFields,
+    chatId: userAdminTable.chatId,
   };
 
   export const UserInfo = UserWithoutPassword;
@@ -64,6 +70,6 @@ export namespace UserModel {
       maxSize: 10 * FileMb,
     }),
   });
-  export type User = typeof userTable.$inferSelect;
+  export type User = typeof userTable.$inferSelect & { chatId: number };
   export type UserWithoutPassword = Omit<User, "password">;
 }

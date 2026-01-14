@@ -3,17 +3,15 @@ import { db } from "../../services/db/db";
 import { notificationTable } from "../../services/db/schema";
 import type { UserNotificationModel } from "./NotificationModel";
 
-export abstract class UserNotificationSerice {
+export abstract class UserNotificationService {
   static async sendNotification(
     userId: number,
     body: UserNotificationModel.UserNotificationCreate
   ) {
-    const notification = await db.insert(notificationTable).values({
+    await db.insert(notificationTable).values({
       ...body,
       userId,
     });
-
-    return notification;
   }
 
   static async fetchUserNotifications(userId: number) {

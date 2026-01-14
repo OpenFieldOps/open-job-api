@@ -75,6 +75,25 @@ describe("User Tests", () => {
     expect(res.data).toHaveProperty("lastName", newUserData.lastName);
   });
 
+  it("should create a private chat when admin creates a user", async () => {
+    const dummy = await createDummyData();
+
+    const createUserRes = await api.user["create-user"].post(
+      newUserData,
+      userHeader(dummy.admin.token)
+    );
+
+    expect(createUserRes.status).toBe(200);
+
+    const chatsRes = await api.chat.get(userHeader(dummy.admin.token));
+
+    expect(chatsRes.status).toBe(200);
+    const chats = chatsRes.data;
+
+    const privateChat = chats?.find((chat) => chat.name === "Private Chat");
+    expect(privateChat).toBeDefined();
+  });
+
   it("should fail to create assigned user with existing email", async () => {
     const dummy = await createDummyData();
 

@@ -4,9 +4,6 @@ TARGET = bun
 NAME = open-job-api
 OUT = $(NAME)
 
-all:
-	( make db-studio & pid=$$!; make api-start; kill $$pid )
-
 compose-up:
 	@$(COMPOSE) up -d
 
@@ -82,7 +79,7 @@ docker-build:
 docker-push:
 	cp ./docker/Dockerfile ./
 	docker buildx build \
-		--platform linux/amd64,linux/arm64/v8 \
+		--platform linux/amd64 \
 		--pull \
 		--tag suleymanrs/$(NAME):latest \
 		--push \

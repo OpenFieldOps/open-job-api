@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import DbUtils from "../../utils";
 import { roleEnum } from "../enums";
+import { chatTable } from "./chat";
 import { fileTable } from "./files";
 import { pricingModelTable } from "./pricing";
 
@@ -47,6 +48,9 @@ export const userAdminTable = pgTable("users_admin", {
   id: defaultId(),
   userId: tableIdRef(userTable.id).unique(),
   adminId: tableIdRef(userTable.id),
+  chatId: integer()
+    .references(() => chatTable.id)
+    .notNull(),
 });
 
 export const userSupervisorTable = pgTable("users_supervisor", {

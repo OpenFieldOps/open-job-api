@@ -7,6 +7,7 @@ export const pricingModelPlugin = new Elysia({
   name: "pricing-model",
   prefix: "/pricing-model",
   tags: ["pricing-model"],
+  aot: true,
 })
   .use(roleMacroPlugin)
   .post(

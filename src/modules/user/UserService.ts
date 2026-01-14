@@ -1,4 +1,4 @@
-import { and, eq, exists, not } from "drizzle-orm";
+import { and, eq, exists } from "drizzle-orm";
 import { db } from "../../services/db/db";
 import {
   userAdminTable,
@@ -90,26 +90,49 @@ export abstract class UserService {
 
     try {
       await db.delete(userTable).where(eq(userTable.id, assignedUserId));
-
-      return;
     } catch {
       return AppError.InternalServerError;
     }
   }
 
   static async fetchAssignedUsers(
-    assignedTo: number,
+    userId: number,
     role?: UserModel.UserRole
   ): Promise<UserModel.UserInfo[]> {
+    const currentUser = await db
+      .select({ role: userTable.role })
+      .from(userTable)
+      .where(eq(userTable.id, userId))
+      .then((res) => res[0]);
+
+    if (!currentUser) {
+      return [];
+    }
+
+    let targetAdminId = userId;
+
+    if (currentUser.role !== "admin") {
+      const adminRelation = await db
+        .select({ adminId: userAdminTable.adminId })
+        .from(userAdminTable)
+        .where(eq(userAdminTable.userId, userId))
+        .then((res) => res[0]);
+
+      if (!adminRelation) {
+        return [];
+      }
+
+      targetAdminId = adminRelation.adminId;
+    }
+
     const users = await db
-      .select(UserModel.userWithoutPasswordSelect)
+      .select(UserModel.userWithoutPasswordSelectFields)
       .from(userTable)
       .innerJoin(
         userAdminTable,
         and(
-          not(eq(userTable.id, assignedTo)),
           eq(userTable.id, userAdminTable.userId),
-          eq(userAdminTable.adminId, assignedTo)
+          eq(userAdminTable.adminId, targetAdminId)
         )
       )
       .where(role ? eq(userTable.role, role) : undefined);
@@ -170,4 +193,15 @@ export abstract class UserService {
       })
       .where(eq(userLocationTable.userId, userId));
   }
+
+  static async getAdminOfUser(userId: number) {
+    const adminResult = await db.select({id: userAdminTable.adminId}).from(userAdminTable).where(eq(userAdminTable.userId, userId))
+
+    if (adminResult.length === 0) {
+      return AppError.NotFound;
+    }
+
+    return adminResult[0].id;
+  }
 }
+

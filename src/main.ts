@@ -4,16 +4,20 @@ import { jobPlugin } from "./modules/job/JobPlugin";
 import { userPlugin } from "./modules/user/UserPlugin";
 import "./services/db/db";
 import { cors } from "@elysiajs/cors";
+import openapi from "@elysiajs/openapi";
 import { authPlugin } from "./modules/auth/AuthPlugin";
+import { chatPlugin } from "./modules/chat/ChatPlugin";
 import { filePlugin } from "./modules/files/FilesPlugin";
 import { InvoicePlugin } from "./modules/invoice/InvoicePlugin";
 import { userNotificationPlugin } from "./modules/notification/NotificationPlugin";
 import { pricingModelPlugin } from "./modules/pricing-model/PricingModelPlugin";
-import openapi from "@elysiajs/openapi";
 
 export const app = new Elysia({
   name: "App",
   prefix: "/api",
+  aot: true,
+  precompile: true,
+  normalize: false,
 })
   .use(cors())
   .use(
@@ -21,13 +25,15 @@ export const app = new Elysia({
       enabled: Bun.env.NODE_ENV !== "production",
     })
   )
-  .onError((error) => {
-    console.error(error);
+  .onError((err) => {
+    console.error(err);
+    return { message: "Internal Server Error" };
   })
   .use(authPlugin)
   .use(userPlugin)
   .use(userNotificationPlugin)
   .use(jobPlugin)
+  .use(chatPlugin)
   .use(filePlugin)
   .use(pricingModelPlugin)
   .use(InvoicePlugin)

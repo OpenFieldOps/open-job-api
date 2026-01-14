@@ -8,6 +8,7 @@ import {
   userTable,
 } from "../../../services/db/schema";
 import { AppError } from "../../../utils/error";
+import { ChatService } from "../../chat/ChatService";
 import { UserModel } from "../../user/UserModel";
 import type { JobModel } from "../JobModel";
 
@@ -22,9 +23,13 @@ export abstract class JobOperatorService {
     if (job.length === 0) return AppError.Unauthorized;
 
     const operators = await db
-      .select(UserModel.userWithoutPasswordSelect)
+      .select(UserModel.userWithoutPasswordSelectFields)
       .from(jobOperatorTable)
       .innerJoin(userTable, eq(jobOperatorTable.operatorId, userTable.id))
+      .innerJoin(
+        userAdminTable,
+        eq(jobOperatorTable.operatorId, userAdminTable.userId)
+      )
       .where(eq(jobOperatorTable.jobId, jobId));
 
     return status(200, operators);
@@ -36,17 +41,22 @@ export abstract class JobOperatorService {
     adminId: number
   ) {
     const job = await db
-      .select()
+      .select({ chatId: jobTable.chatId, title: jobTable.title })
       .from(jobTable)
-      .where(and(eq(jobTable.id, jobId), eq(jobTable.createdBy, adminId)))
+      .where(eq(jobTable.id, jobId))
       .limit(1);
 
-    if (job.length === 0) return AppError.Unauthorized;
+    if (job.length === 0) {
+      return AppError.NotFound;
+    }
+
+    let operators: UserModel.UserInfo[] = [];
 
     if (operatorIds.length > 0) {
       const managedUsers = await db
-        .select({ userId: userAdminTable.userId })
+        .select(UserModel.userWithoutPasswordSelectFields)
         .from(userAdminTable)
+        .innerJoin(userTable, eq(userAdminTable.userId, userTable.id))
         .where(
           and(
             eq(userAdminTable.adminId, adminId),
@@ -57,6 +67,8 @@ export abstract class JobOperatorService {
       if (managedUsers.length !== operatorIds.length) {
         return AppError.Unauthorized;
       }
+
+      operators = managedUsers;
     }
 
     await db.transaction(async (tx) => {
@@ -75,7 +87,12 @@ export abstract class JobOperatorService {
       }
     });
 
-    return status(200, { success: true });
+    await ChatService.setMembers(
+      job[0].chatId,
+      Array.from(new Set([adminId, ...operatorIds]))
+    );
+
+    return status(200, operators);
   }
 
   static async updateJobOperators(

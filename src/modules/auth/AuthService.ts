@@ -9,6 +9,7 @@ import {
 import { sendEmail } from "../../services/mail/resend";
 import { FileStorageService } from "../../services/storage/s3";
 import { AppError } from "../../utils/error";
+import { ChatService } from "../chat/ChatService";
 import { UserModel } from "../user/UserModel";
 import type { AuthModel } from "./AuthModel";
 import { jwtPlugin } from "./macro";
@@ -42,12 +43,21 @@ export abstract class AuthService {
         await db
           .insert(userTable)
           .values({ ...body, role })
-          .returning(UserModel.userWithoutPasswordSelect)
+          .returning(UserModel.userTableSelectFields)
       )[0];
+
+      const chatUserIds = Array.from(
+        new Set([assignedTo || user.id, user.id])
+      );
+      const chat = await ChatService.createChat("Private Chat", chatUserIds);
 
       await db
         .insert(userAdminTable)
-        .values({ adminId: assignedTo ?? user.id, userId: user.id })
+        .values({
+          adminId: assignedTo ?? user.id,
+          userId: user.id,
+          chatId: chat.id,
+        })
         .execute();
 
       await db
@@ -55,7 +65,10 @@ export abstract class AuthService {
         .values({ userId: user.id, latitude: 0, longitude: 0 })
         .execute();
 
-      return user;
+      return {
+        ...user,
+        chatId: chat.id,
+      };
     } catch {
       return AppError.ResultEnum.Conflict;
     }
@@ -92,10 +105,12 @@ export abstract class AuthService {
     const user = (
       await db
         .select({
-          ...UserModel.userWithoutPasswordSelect,
+          ...UserModel.userTableSelectFields,
           password: userTable.password,
+          chatId: userAdminTable.chatId,
         })
         .from(userTable)
+        .innerJoin(userAdminTable, eq(userTable.id, userAdminTable.userId))
         .where(eq(userTable.email, loginBody.email))
     ).pop();
 
@@ -111,12 +126,17 @@ export abstract class AuthService {
   }
 
   static async getAuthenticatedUser(userId: number) {
+    await db
+      .update(userTable)
+      .set({ lastSeen: new Date().toISOString() })
+      .where(eq(userTable.id, userId));
+
     const user = (
       await db
-        .update(userTable)
-        .set({ lastSeen: new Date().toISOString() })
+        .select(UserModel.userWithoutPasswordSelectFields)
+        .from(userTable)
+        .innerJoin(userAdminTable, eq(userTable.id, userAdminTable.userId))
         .where(eq(userTable.id, userId))
-        .returning(UserModel.userWithoutPasswordSelect)
     ).pop();
 
     if (!user) return AppError.NotFound;

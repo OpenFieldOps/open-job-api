@@ -1,19 +1,16 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../../services/db/db";
-import { fileTable, jobFiles } from "../../../services/db/schema";
+import { fileTable, jobFiles, jobTable } from "../../../services/db/schema";
 import { FileStorageService } from "../../../services/storage/s3";
 import { AppError } from "../../../utils/error";
 import type { FileModel } from "../../models/FileModel";
-import { userJobAccessCondition } from "./JobAccess";
+import { userJobAccessSubquery } from "./JobAccess";
 
 export abstract class JobDocumentService {
   static async fetchJobDocuments(
     jobId: number,
     userId: number
   ): Promise<FileModel.DbFile[]> {
-    const hasAccess = await userJobAccessCondition(userId, jobId);
-    if (!hasAccess) return [];
-
     return db
       .select({
         id: fileTable.id,
@@ -21,12 +18,27 @@ export abstract class JobDocumentService {
       })
       .from(jobFiles)
       .innerJoin(fileTable, eq(fileTable.id, jobFiles.fileId))
-      .where(eq(jobFiles.jobId, jobId));
+      .innerJoin(jobTable, eq(jobFiles.jobId, jobTable.id))
+      .where(
+        and(
+          eq(jobFiles.jobId, jobId),
+          inArray(jobTable.id, userJobAccessSubquery(jobId, userId))
+        )
+      );
   }
 
   static async createJobDocument(jobId: number, file: File, userId: number) {
-    const hasAccess = await userJobAccessCondition(userId, jobId);
-    if (!hasAccess) return AppError.Unauthorized;
+    const jobAccess = await db
+      .select({ id: jobTable.id })
+      .from(jobTable)
+      .where(
+        and(
+          eq(jobTable.id, jobId),
+          inArray(jobTable.id, userJobAccessSubquery(jobId, userId))
+        )
+      );
+
+    if (jobAccess.length === 0) return AppError.Unauthorized;
 
     const fileId = await FileStorageService.uploadFile(file);
     await db.insert(jobFiles).values({ fileId, jobId });
@@ -39,10 +51,22 @@ export abstract class JobDocumentService {
     userId: number,
     fileId: string
   ) {
-    const hasAccess = await userJobAccessCondition(userId, jobId);
-    if (!hasAccess) return AppError.Unauthorized;
+    const deleted = await db
+      .delete(jobFiles)
+      .where(
+        and(
+          eq(jobFiles.fileId, fileId),
+          eq(jobFiles.jobId, jobId),
+          inArray(
+            jobFiles.jobId,
+            userJobAccessSubquery(jobId, userId)
+          )
+        )
+      )
+      .returning();
 
-    await db.delete(jobFiles).where(eq(jobFiles.fileId, fileId));
+    if (deleted.length === 0) return AppError.Unauthorized;
+
     await FileStorageService.deleteFile(fileId);
   }
 }

@@ -1,23 +1,47 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { status } from "elysia";
 import { db } from "../../../services/db/db";
 import {
   fileTable,
+  jobOperatorTable,
   jobReportFileTable,
   jobReportTable,
+  jobTable,
 } from "../../../services/db/schema";
 import { FileStorageService } from "../../../services/storage/s3";
 import { AppError } from "../../../utils/error";
 import type { JobModel } from "../JobModel";
-import { userJobAccessCondition } from "./JobAccess";
+import { userJobAccessSubquery } from "./JobAccess";
+
+function relatedUserJobAccessSubquery(userId: number) {
+  return db
+    .select({ id: jobTable.id })
+    .from(jobTable)
+    .leftJoin(jobOperatorTable, eq(jobTable.id, jobOperatorTable.jobId))
+    .where(
+      or(
+        eq(jobTable.createdBy, userId),
+        eq(jobOperatorTable.operatorId, userId)
+      )
+    );
+}
 
 export abstract class JobReportService {
   static async createJobReport(
     body: JobModel.JobReportCreateBody,
     userId: number
   ) {
-    const hasAccess = await userJobAccessCondition(userId, body.jobId);
-    if (!hasAccess) return AppError.Unauthorized;
+    const jobAccess = await db
+      .select({ id: jobTable.id })
+      .from(jobTable)
+      .where(
+        and(
+          eq(jobTable.id, body.jobId),
+          inArray(jobTable.id, userJobAccessSubquery(body.jobId, userId))
+        )
+      );
+
+    if (jobAccess.length === 0) return AppError.Unauthorized;
 
     const signatureId = await FileStorageService.uploadFile(body.signature);
 
@@ -50,9 +74,6 @@ export abstract class JobReportService {
   }
 
   static async getJobReports(jobId: number, userId: number) {
-    const hasAccess = await userJobAccessCondition(userId, jobId);
-    if (!hasAccess) return AppError.Unauthorized;
-
     const reports = await db
       .select({
         id: jobReportTable.id,
@@ -62,22 +83,37 @@ export abstract class JobReportService {
         jobId: jobReportTable.jobId,
       })
       .from(jobReportTable)
-      .where(eq(jobReportTable.jobId, jobId));
+      .innerJoin(jobTable, eq(jobReportTable.jobId, jobTable.id))
+      .where(
+        and(
+          eq(jobReportTable.jobId, jobId),
+          inArray(jobTable.id, userJobAccessSubquery(jobId, userId))
+        )
+      );
 
     return status(200, reports);
   }
 
   static async getJobReportById(reportId: number, userId: number) {
     const report = await db
-      .select()
+      .select({
+        id: jobReportTable.id,
+        description: jobReportTable.description,
+        completedAt: jobReportTable.completedAt,
+        signature: jobReportTable.signature,
+        jobId: jobReportTable.jobId,
+      })
       .from(jobReportTable)
-      .where(eq(jobReportTable.id, reportId))
+      .innerJoin(jobTable, eq(jobReportTable.jobId, jobTable.id))
+      .where(
+        and(
+          eq(jobReportTable.id, reportId),
+          inArray(jobTable.id, relatedUserJobAccessSubquery(userId))
+        )
+      )
       .limit(1);
 
     if (report.length === 0) return AppError.NotFound;
-
-    const hasAccess = await userJobAccessCondition(userId, report[0].jobId);
-    if (!hasAccess) return AppError.Unauthorized;
 
     return status(200, report[0]);
   }
@@ -87,25 +123,30 @@ export abstract class JobReportService {
     body: JobModel.JobReportUpdateBody,
     userId: number
   ) {
-    const existingReport = await db
-      .select()
-      .from(jobReportTable)
-      .where(eq(jobReportTable.id, reportId))
-      .limit(1);
-
-    if (existingReport.length === 0) return AppError.NotFound;
-
-    const hasAccess = await userJobAccessCondition(
-      userId,
-      existingReport[0].jobId
-    );
-    if (!hasAccess) return AppError.Unauthorized;
-
     const updatedReport = await db
       .update(jobReportTable)
       .set({ description: body.description })
-      .where(eq(jobReportTable.id, reportId))
+      .where(
+        and(
+          eq(jobReportTable.id, reportId),
+          inArray(
+            jobReportTable.jobId,
+            db
+              .select({ id: jobTable.id })
+              .from(jobReportTable)
+              .innerJoin(jobTable, eq(jobReportTable.jobId, jobTable.id))
+              .where(
+                and(
+                  eq(jobReportTable.id, reportId),
+                  inArray(jobTable.id, relatedUserJobAccessSubquery(userId))
+                )
+              )
+          )
+        )
+      )
       .returning();
+
+    if (updatedReport.length === 0) return AppError.NotFound;
 
     if (body.files?.length) {
       await Promise.all(
@@ -125,15 +166,22 @@ export abstract class JobReportService {
 
   static async deleteJobReport(reportId: number, userId: number) {
     const report = await db
-      .select()
+      .select({
+        id: jobReportTable.id,
+        signature: jobReportTable.signature,
+        jobId: jobReportTable.jobId,
+      })
       .from(jobReportTable)
-      .where(eq(jobReportTable.id, reportId))
+      .innerJoin(jobTable, eq(jobReportTable.jobId, jobTable.id))
+      .where(
+        and(
+          eq(jobReportTable.id, reportId),
+          inArray(jobTable.id, relatedUserJobAccessSubquery(userId))
+        )
+      )
       .limit(1);
 
     if (report.length === 0) return AppError.NotFound;
-
-    const hasAccess = await userJobAccessCondition(userId, report[0].jobId);
-    if (!hasAccess) return AppError.Unauthorized;
 
     const reportFiles = await db
       .select()
@@ -153,17 +201,6 @@ export abstract class JobReportService {
   }
 
   static async getJobReportFiles(reportId: number, userId: number) {
-    const report = await db
-      .select()
-      .from(jobReportTable)
-      .where(eq(jobReportTable.id, reportId))
-      .limit(1);
-
-    if (report.length === 0) return AppError.NotFound;
-
-    const hasAccess = await userJobAccessCondition(userId, report[0].jobId);
-    if (!hasAccess) return AppError.Unauthorized;
-
     const files = await db
       .select({
         id: fileTable.id,
@@ -171,7 +208,17 @@ export abstract class JobReportService {
       })
       .from(jobReportFileTable)
       .innerJoin(fileTable, eq(fileTable.id, jobReportFileTable.fileId))
-      .where(eq(jobReportFileTable.jobReportId, reportId));
+      .innerJoin(
+        jobReportTable,
+        eq(jobReportFileTable.jobReportId, jobReportTable.id)
+      )
+      .innerJoin(jobTable, eq(jobReportTable.jobId, jobTable.id))
+      .where(
+        and(
+          eq(jobReportFileTable.jobReportId, reportId),
+          inArray(jobTable.id, relatedUserJobAccessSubquery(userId))
+        )
+      );
 
     return status(200, files);
   }

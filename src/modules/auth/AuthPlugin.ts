@@ -11,6 +11,7 @@ export const authPlugin = new Elysia({
     summary: "Authentication Module",
     description: "Handles user authentication, registration, and login",
   },
+  aot: true,
 })
   .use(authMacroPlugin)
   .post(
